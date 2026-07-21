@@ -43,3 +43,10 @@
 4. **위키 링크**: 정전협정→영문 위키(한글 전용 문서 없음), 밀다원시대→저자 김동리 문서로 연결.
 5. **워드클라우드 형태소**: 조사만 규칙 제거라 '좁은·터지자' 등 용언 어간이 일부 상위어에 섞임(교육용 허용 수준). 정밀히 하려면 형태소 분석기 필요.
 6. **전체화면**: 브라우저 정책상 실제 사용자 클릭(제스처)이 있어야 작동(자동 테스트로는 검증 불가, 버튼·핸들러는 정상).
+
+## [배포 완료]
+- **GitHub 리포**: https://github.com/ArchivelabEdu/psu-dh2026 (계정 ArchivelabEdu, public)
+- **라이브 사이트(GitHub Pages)**: https://archivelabedu.github.io/psu-dh2026/ (루트 index.html → exhibit/ 리다이렉트)
+- Pages는 main 브랜치 루트에서 서빙. `.nojekyll`로 Jekyll 우회(한글 파일명·언더스코어 보존).
+- **검증**: 배포 URL을 헤드리스 Chrome으로 렌더 → 지도·연표·관계망(이미지노드 HTTPS 로드)·워드클라우드 정상. 한글 파일명 asset 모두 200.
+- **Vercel**: GitHub Pages(선호안)가 성공하여 사용하지 않음. 필요 시 suwon-archive-demo 계정으로 추가 배포 가능.
