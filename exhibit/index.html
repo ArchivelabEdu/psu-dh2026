@@ -31,8 +31,9 @@
   header p.lede{max-width:660px;margin:18px auto 0;color:var(--muted);font-size:15.5px}
   nav{position:sticky;top:0;z-index:1000;background:rgba(244,239,230,.92);
     backdrop-filter:blur(8px);border-bottom:1px solid var(--line);text-align:center;padding:10px}
-  nav a{margin:0 9px;text-decoration:none;color:var(--accent2);font-weight:600;font-size:14px}
-  nav a:hover{color:var(--accent)}
+  nav a{margin:0 14px;text-decoration:none;color:var(--accent2);font-weight:600;font-size:14px;
+    letter-spacing:.03em;padding-bottom:2px;border-bottom:1px solid transparent;transition:border-color .15s,color .15s}
+  nav a:hover{color:var(--accent);border-bottom-color:var(--accent)}
   main{max-width:1080px;margin:0 auto;padding:16px}
   section{margin:44px 0;background:var(--card);border:1px solid var(--line);
     border-radius:14px;box-shadow:var(--shadow);overflow:hidden;scroll-margin-top:56px}
@@ -59,9 +60,40 @@
   .map-wrap{display:flex;gap:14px;height:520px}
   .map-wrap #map-view{flex:1 1 auto;height:100%;border-radius:10px;border:1px solid var(--line)}
   .map-wrap:fullscreen{height:100vh;background:var(--paper);padding:16px}
-  .info-panel{flex:0 0 300px;width:300px;border:1px solid var(--line);border-radius:10px;
-    background:#fff;overflow:auto}
-  .ip-hint{padding:26px 20px;color:var(--muted);font-size:14px;text-align:center}
+  .info-panel{flex:0 0 320px;width:320px;border:1px solid var(--line);border-radius:10px;
+    background:#fff;overflow:hidden;display:flex;flex-direction:column}
+  .ip-tabs{display:flex;border-bottom:1px solid var(--line);flex:0 0 auto}
+  .ip-tabs button{flex:1;border:0;background:#fbf8f2;color:var(--muted);font:inherit;font-size:13px;
+    font-weight:700;padding:11px 0;cursor:pointer;border-right:1px solid var(--line)}
+  .ip-tabs button:last-child{border-right:0}
+  .ip-tabs button.on{background:#fff;color:var(--accent2);box-shadow:inset 0 -2px 0 var(--accent2)}
+  .ip-content{flex:1 1 auto;overflow:auto}
+  .ip-hint{padding:26px 20px;color:var(--muted);font-size:14px;text-align:center;line-height:1.7}
+  /* 장소 목록 */
+  .ip-list{list-style:none;margin:0;padding:6px}
+  .ip-list li{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:8px;cursor:pointer;
+    font-size:14px;transition:background .12s}
+  .ip-list li:hover{background:#f3ecdd}
+  .ip-list li.active{background:#f6e7dd}
+  .ip-list .lc{width:11px;height:11px;border-radius:50%;flex:0 0 auto;border:1px solid rgba(0,0,0,.12)}
+  .ip-list .ln{font-weight:600;color:#3a332d}
+  .ip-list .lt{margin-left:auto;font-size:11px;color:#9a8f80}
+  .ip-back{display:inline-flex;align-items:center;gap:5px;margin:10px 0 0 14px;font-size:12.5px;
+    font-weight:700;color:var(--accent2);cursor:pointer;background:none;border:0;padding:0}
+  .ip-back:hover{color:var(--accent)}
+  /* 스토리 */
+  .story{display:flex;flex-direction:column;height:100%}
+  .story-thumb{width:100%;height:170px;object-fit:cover;display:block;background:#eee}
+  .story-body{padding:14px 16px;flex:1}
+  .story-step{font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--gold)}
+  .story-title{font-size:18px;font-weight:800;margin:3px 0 7px;letter-spacing:-.01em}
+  .story-text{font-size:14px;color:#463f38;line-height:1.75;margin:0}
+  .story-nav{display:flex;align-items:center;gap:8px;padding:12px 16px;border-top:1px solid var(--line)}
+  .story-nav button{border:1px solid var(--line);background:#fff;color:var(--accent2);font:inherit;
+    font-size:13px;font-weight:700;padding:6px 12px;border-radius:7px;cursor:pointer}
+  .story-nav button:hover:not(:disabled){background:#efe7d8}
+  .story-nav button:disabled{opacity:.4;cursor:default}
+  .story-nav .prog{margin-left:auto;font-size:12px;color:var(--muted);font-weight:700}
   .ip-thumb{width:100%;height:178px;object-fit:cover;display:block;background:#eee}
   .ip-body{padding:14px 16px}
   .ip-title{font-size:18px;font-weight:800;letter-spacing:-.01em}
@@ -85,6 +117,15 @@
   .tl-detail .credit{font-size:11px;color:#9a8f80;margin-top:8px}
   /* 관계망 */
   #network-view{height:560px;border:1px solid var(--line);border-radius:10px;background:#fbfaf7}
+  .net-caption{margin-top:12px;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+    background:#fff;min-height:52px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .net-caption.empty{color:var(--muted);font-size:14px}
+  .net-caption .nc-name{font-size:20px;font-weight:800;letter-spacing:-.01em}
+  .net-caption .nc-cls{padding:2px 10px;border-radius:20px;font-size:12px;font-weight:700;color:#fff}
+  .net-caption .nc-rel{font-size:13px;color:#6b6157}
+  .net-caption a{margin-left:auto;font-size:13px;font-weight:700;text-decoration:none;color:var(--accent);
+    border:1px solid var(--accent);border-radius:8px;padding:5px 11px}
+  .net-caption a:hover{background:var(--accent);color:#fff}
   /* 언어 */
   .wc-stage{position:relative;border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden}
   #wordcloud{height:460px;width:100%;display:block}
@@ -96,12 +137,13 @@
   .bar-row .track{flex:1;background:#f0e8d8;border-radius:5px;height:18px;overflow:hidden}
   .bar-row .fill{height:100%;border-radius:5px}
   .bar-row .num{flex:0 0 30px;color:var(--muted);font-weight:700}
-  #wc-heat{padding:16px;display:none;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px}
-  .heat-cell{border-radius:7px;padding:9px 8px;color:#fff;text-align:center;line-height:1.25;
-    cursor:default;transition:transform .1s}
-  .heat-cell:hover{transform:scale(1.06)}
-  .heat-cell .hw{font-size:13px;font-weight:700;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .heat-cell .hn{font-size:11px;opacity:.85}
+  #wc-heat{padding:18px;display:none;flex-wrap:wrap;gap:8px;align-content:flex-start;align-items:flex-start}
+  .heat-cell{border-radius:8px;color:#fff;line-height:1.2;cursor:default;transition:transform .12s;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+    overflow:hidden;padding:4px}
+  .heat-cell:hover{transform:scale(1.05)}
+  .heat-cell .hw{font-weight:800;display:block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .heat-cell .hn{font-size:11px;opacity:.9;margin-top:2px}
   .legend{display:flex;flex-wrap:wrap;gap:10px 16px;margin:6px 0 2px;font-size:13px;color:var(--muted)}
   .legend span{display:inline-flex;align-items:center;gap:6px}
   .legend .legend-item{cursor:pointer;user-select:none;padding:2px 6px;border-radius:6px;transition:opacity .15s,background .15s}
@@ -141,11 +183,11 @@
 </header>
 
 <nav>
-  <a href="#map">🗺️ 지도</a>
-  <a href="#timeline">🕰️ 연표</a>
-  <a href="#network">🕸️ 관계망</a>
-  <a href="#words">☁️ 언어</a>
-  <a href="#about">📖 해설</a>
+  <a href="#map">지도</a>
+  <a href="#timeline">연표</a>
+  <a href="#network">관계망</a>
+  <a href="#words">언어</a>
+  <a href="#about">해설</a>
 </nav>
 
 <main>
@@ -153,19 +195,25 @@
     <div class="sec-head">
       <div class="tag">PLACE · 장소</div>
       <h2>피란의 지도</h2>
-      <p class="sub">마커를 누르면 오른쪽에 대표 이미지와 정보가, 범례를 누르면 유형별 필터가 작동합니다.</p>
+      <p class="sub">오른쪽 <b>장소 목록</b>에서 골라 지도를 옮기거나, <b>스토리</b>로 주요 장소를 차례로 따라가 보세요. 범례는 유형별 필터입니다.</p>
       <div class="lead">피란수도의 지리는 <b>평지의 권력</b>과 <b>산비탈의 삶</b>으로 갈렸다. 원도심 평지에는
         임시수도 정부청사·관저·시장·다방이 몰렸고, 피란민은 우암동·아미동·감천 등 산비탈 마을로 밀려 올라갔다.
         범례로 유형을 걸러 보면 권력·상업·문화는 원도심에, 정착과 생존은 산복도로에 자리했음이 한눈에 드러난다.</p>
       <div class="toolbar">
-        <button class="btn" id="map-fs">⛶ 전체 화면</button>
+        <button class="btn" id="map-fs">전체 화면</button>
         <div class="legend" id="map-legend"></div>
       </div>
     </div>
     <div class="viz">
       <div class="map-wrap" id="map-wrap">
         <div id="map-view"></div>
-        <aside class="info-panel" id="map-info"><div class="ip-hint">마커를 클릭하면<br>장소의 대표 이미지와 정보가<br>여기에 표시됩니다.</div></aside>
+        <aside class="info-panel" id="map-info">
+          <div class="ip-tabs">
+            <button data-panel="list" class="on">장소 목록</button>
+            <button data-panel="story">스토리</button>
+          </div>
+          <div class="ip-content" id="ip-content"></div>
+        </aside>
       </div>
     </div>
   </section>
@@ -195,13 +243,16 @@
         이중섭 → 원산·영도·은지화로 이어지는 경로는 개인의 피란이 곧 창작의 조건이었음을 드러낸다.</div>
       <div class="toolbar">
         <div class="seg" id="net-mode">
-          <button data-mode="image" class="on">🖼 사진 노드</button>
-          <button data-mode="dot">● 점 노드</button>
+          <button data-mode="image" class="on">사진 노드</button>
+          <button data-mode="dot">점 노드</button>
         </div>
         <div class="legend" id="net-legend"></div>
       </div>
     </div>
-    <div class="viz"><div id="network-view"></div></div>
+    <div class="viz">
+      <div id="network-view"></div>
+      <div class="net-caption empty" id="net-caption">노드를 클릭하면 이름과 분류가 여기에 표시됩니다.</div>
+    </div>
   </section>
 
   <section id="words">
@@ -213,9 +264,9 @@
         ‘피란민의 생활공간’(골목·산복도로·시장·판잣집) 두 축으로 갈린다.</div>
       <div class="toolbar">
         <div class="seg" id="wc-mode">
-          <button data-mode="cloud" class="on">☁️ 워드클라우드</button>
-          <button data-mode="bar">📊 막대그래프</button>
-          <button data-mode="heat">🔥 히트맵</button>
+          <button data-mode="cloud" class="on">워드클라우드</button>
+          <button data-mode="bar">막대그래프</button>
+          <button data-mode="heat">히트맵</button>
         </div>
       </div>
     </div>
@@ -252,10 +303,10 @@
           산복도로에 층층이 남아 있다.</p>
       </div>
       <div class="about-grid">
-        <div class="about-card"><h4>🗺️ 지도 — 장소</h4><p>15개 장소를 유형별 색으로. 원도심의 권력·상업·문화와 산비탈의 정착촌이 공간적으로 갈린다. 마커 클릭 시 대표 이미지·설명, 전체화면·유형 필터 지원.</p></div>
-        <div class="about-card"><h4>🕰️ 연표 — 사건</h4><p>1950–53년 8개 사건을 시간축에. 전세·정치·재난 세 흐름이 교차한다. 사건 클릭 시 대표 이미지와 위키백과 링크로 연결.</p></div>
-        <div class="about-card"><h4>🕸️ 관계망 — 관계</h4><p>25개 트리플(주어–서술어–목적어)을 지식그래프로. 클래스(인물·장소·사건·작품·집단)별 필터, 원 안 사진 뷰, 살아 움직이는 배치.</p></div>
-        <div class="about-card"><h4>☁️ 언어 — 텍스트</h4><p>서술형 본문의 단어 빈도. 조사를 떼고 상위어를 워드클라우드·막대그래프·히트맵 세 방식으로. 호버 시 등장 횟수 표시.</p></div>
+        <div class="about-card"><h4>지도 — 장소</h4><p>15개 장소를 유형별 색으로. 원도심의 권력·상업·문화와 산비탈의 정착촌이 공간적으로 갈린다. 장소 목록·스토리 투어, 마커 클릭 시 대표 이미지·설명, 전체화면·유형 필터 지원.</p></div>
+        <div class="about-card"><h4>연표 — 사건</h4><p>1950–53년 8개 사건을 시간축에. 전세·정치·재난 세 흐름이 교차한다. 사건 클릭 시 대표 이미지와 위키백과 링크로 연결.</p></div>
+        <div class="about-card"><h4>관계망 — 관계</h4><p>25개 트리플(주어–서술어–목적어)을 지식그래프로. 클래스(인물·장소·사건·작품·집단)별 필터, 원 안 사진 뷰, 노드 클릭 시 제목 강조, 살아 움직이는 배치.</p></div>
+        <div class="about-card"><h4>언어 — 텍스트</h4><p>서술형 본문의 단어 빈도. 조사를 떼고 상위어를 워드클라우드·막대그래프·히트맵 세 방식으로. 호버 시 등장 횟수 표시, 히트맵은 빈도가 클수록 큰 박스.</p></div>
       </div>
     </div>
   </section>
@@ -585,29 +636,86 @@ function wikiOf(name){ return WIKI[name] || null; }
 const map = L.map("map-view",{scrollWheelZoom:false}).setView([35.098,129.030],13);
 L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
   {attribution:"© OpenStreetMap © CARTO",maxZoom:19}).addTo(map);
-const bounds=[], layersByType={};
-const mapInfo=document.getElementById("map-info");
-function showPlaceInfo(p){
-  const m=mediaOf(p.name), c=TYPE_COLOR[p.type]||"#6b6157", w=wikiOf(p.name);
-  const img = m ? `<img class="ip-thumb" src="${m.img}" alt="${p.name}">` : "";
-  const credit = m && m.credit ? `<div class="ip-credit">이미지: ${m.credit}</div>` : "";
-  const link = w ? `<a class="ip-link" href="${w}" target="_blank" rel="noopener">위키백과에서 보기 ↗</a>` : "";
-  mapInfo.innerHTML = img +
-    `<div class="ip-body"><div class="ip-title">${p.name}</div>`+
-    `<span class="ip-chip" style="background:${c}">${p.type}</span>`+
-    `<p class="ip-desc">${p.desc}</p>${link}${credit}</div>`;
-  mapInfo.scrollTop=0;
-}
-PLACES.forEach(p=>{
-  if(p.name==="원산") return;              // 북한 소재 — 부산 지도에서 제외
+const bounds=[], layersByType={}, markerByName={};
+const busanPlaces = PLACES.filter(p=>p.name!=="원산");   // 원산(북한)은 지도/목록/스토리에서 제외
+busanPlaces.forEach(p=>{
   const c=TYPE_COLOR[p.type]||"#6b6157";
   const m=L.circleMarker([p.lat,p.lng],{radius:9,color:"#fff",weight:2,fillColor:c,fillOpacity:.92})
     .bindTooltip(p.name,{direction:"top"})
-    .on("click",()=>showPlaceInfo(p));
+    .on("click",()=>selectPlace(p));
+  markerByName[p.name]=m;
   (layersByType[p.type] ||= L.layerGroup().addTo(map)).addLayer(m);
   bounds.push([p.lat,p.lng]);
 });
 map.fitBounds(bounds,{padding:[40,40]});
+const homeBounds=L.latLngBounds(bounds);
+
+/* --- 우측 패널: 장소 목록 / 상세 / 스토리 --- */
+const ipContent=document.getElementById("ip-content");
+let activePanel="list", storyIdx=0;
+function placeDetailHTML(p,back){
+  const m=mediaOf(p.name), c=TYPE_COLOR[p.type]||"#6b6157", w=wikiOf(p.name);
+  const img=m?`<img class="ip-thumb" src="${m.img}" alt="${p.name}">`:"";
+  const credit=m&&m.credit?`<div class="ip-credit">이미지: ${m.credit}</div>`:"";
+  const link=w?`<a class="ip-link" href="${w}" target="_blank" rel="noopener">위키백과에서 보기 →</a>`:"";
+  const backBtn=back?`<button class="ip-back" onclick="renderList()">‹ 장소 목록</button>`:"";
+  return backBtn+img+`<div class="ip-body"><div class="ip-title">${p.name}</div>`+
+    `<span class="ip-chip" style="background:${c}">${p.type}</span>`+
+    `<p class="ip-desc">${p.desc}</p>${link}${credit}</div>`;
+}
+function renderList(){
+  activePanel="list"; setPanelTab("list");
+  ipContent.innerHTML = `<ul class="ip-list">`+busanPlaces.map(p=>
+    `<li data-name="${p.name}"><i class="lc" style="background:${TYPE_COLOR[p.type]||'#6b6157'}"></i>`+
+    `<span class="ln">${p.name}</span><span class="lt">${p.type}</span></li>`).join("")+`</ul>`;
+  ipContent.querySelectorAll(".ip-list li").forEach(li=>
+    li.addEventListener("click",()=>selectPlace(busanPlaces.find(x=>x.name===li.dataset.name))));
+  ipContent.scrollTop=0;
+}
+function selectPlace(p){
+  if(!p) return;
+  setPanelTab("list"); activePanel="list";
+  map.flyTo([p.lat,p.lng],16,{duration:.8});
+  const mk=markerByName[p.name]; if(mk) mk.openTooltip();
+  ipContent.innerHTML = placeDetailHTML(p,true);
+  ipContent.scrollTop=0;
+}
+
+/* --- 스토리(StoryMap식 가이드 투어) — 주요 장소를 차례로 이동 --- */
+const STORY=[
+  {name:"부산항", title:"관문 — 피란민이 밀려들다", text:"1950년, 전쟁을 피해 전국에서 몰려든 피란민이 배와 열차로 이곳에 쏟아져 들어왔다. 구호물자가 오가던 임시수도의 관문이자, 낯선 도시살이가 시작된 자리다."},
+  {name:"국제시장", title:"상권 — 피란 경제의 심장", text:"구호물자와 밀수품, 미군 부대에서 흘러나온 물건이 뒤섞여 팔렸다. 피란 상권의 중심이었지만, 1953년 이 일대를 태운 대화재로 잿더미가 되기도 했다."},
+  {name:"40계단", title:"만남 — 흩어진 가족을 찾다", text:"헤어진 가족이 서로를 찾아 오르내리며 기다리던 계단. 피란살이의 재회와 이별이 교차하던, 도시에서 가장 붐비던 약속의 자리였다."},
+  {name:"보수동책방골목", title:"지식 — 골목이 된 책방", text:"부산으로 옮겨 온 학교와 학생들 곁에 헌책방이 하나둘 모여 골목을 이루었다. 전쟁 통에도 책을 사고팔며 지식의 끈을 놓지 않은 공간이다."},
+  {name:"광복동", title:"예술 — 다방에 모인 사람들", text:"피란 온 문화예술인의 번화가. 밀다원다방에는 김동리 같은 문인들이 모여 시대를 이야기했고, 그 풍경은 훗날 소설 『밀다원 시대』의 배경이 되었다."},
+  {name:"감천문화마을", title:"정착 — 산비탈로 오른 삶", text:"평지에 자리가 없던 피란민은 산비탈로 올라갔다. 계단식 골목을 따라 집이 빼곡히 들어찬 정착촌은, 오늘날 부산 피란살이를 상징하는 풍경이 되었다."},
+  {name:"임시수도정부청사", title:"권력 — 나라의 심장이 옮겨오다", text:"부민동에 자리 잡은 임시수도의 정부청사(현 동아대 석당박물관). 전쟁 한복판에서 나라의 행정이 이곳에서 이어졌고, 부산은 3년간 대한민국의 심장이 되었다."}
+];
+function renderStory(i){
+  activePanel="story"; setPanelTab("story");
+  storyIdx=(i+STORY.length)%STORY.length;
+  const s=STORY[storyIdx], p=busanPlaces.find(x=>x.name===s.name), m=mediaOf(s.name);
+  if(p){ map.flyTo([p.lat,p.lng],16,{duration:.9}); const mk=markerByName[s.name]; if(mk) mk.openTooltip(); }
+  const img=m?`<img class="story-thumb" src="${m.img}" alt="${s.name}">`:"";
+  ipContent.innerHTML =
+    `<div class="story">${img}<div class="story-body">`+
+    `<div class="story-step">${s.name}</div>`+
+    `<div class="story-title">${s.title}</div>`+
+    `<p class="story-text">${s.text}</p></div>`+
+    `<div class="story-nav">`+
+    `<button ${storyIdx===0?'disabled':''} onclick="renderStory(${storyIdx-1})">‹ 이전</button>`+
+    `<button ${storyIdx===STORY.length-1?'disabled':''} onclick="renderStory(${storyIdx+1})">다음 ›</button>`+
+    `<span class="prog">${storyIdx+1} / ${STORY.length}</span></div></div>`;
+}
+
+function setPanelTab(which){
+  document.querySelectorAll(".ip-tabs button").forEach(b=>b.classList.toggle("on",b.dataset.panel===which));
+}
+document.querySelectorAll(".ip-tabs button").forEach(b=>b.addEventListener("click",()=>{
+  if(b.dataset.panel==="list"){ renderList(); map.flyToBounds(homeBounds,{padding:[40,40],duration:.7}); }
+  else renderStory(0);
+}));
+renderList();   // 기본은 장소 목록
 
 // 범례 — 클릭하면 해당 유형 마커 토글
 const mapLegend=document.getElementById("map-legend");
@@ -642,7 +750,7 @@ function showEventInfo(e){
   const m=mediaOf(e.title), w=wikiOf(e.title);
   const img = m ? `<img src="${m.img}" alt="${e.title}">` : "";
   const credit = m && m.credit ? `<div class="credit">이미지: ${m.credit}</div>` : "";
-  const link = w ? `<a class="ip-link" href="${w}" target="_blank" rel="noopener">대표 사이트(위키백과) ↗</a>` : "";
+  const link = w ? `<a class="ip-link" href="${w}" target="_blank" rel="noopener">대표 사이트(위키백과) →</a>` : "";
   tlDetail.className="tl-detail";
   tlDetail.innerHTML = img +
     `<div class="body"><div class="date">${e.date}</div><div class="ttl">${e.title}</div>`+
@@ -700,12 +808,35 @@ const netHeartbeat=setInterval(()=>{
   }}});
 },220);
 
+// 노드 클릭 → 하단 캡션에 제목 강조 + 선택 노드 라벨 확대
+const netCaption=document.getElementById("net-caption");
+const NET_FONT={color:"#2b2622",size:14,face:"Noto Sans KR"};
+const NET_FONT_SEL={color:"#2b2622",size:23,face:"Noto Sans KR",strokeWidth:7,strokeColor:"#ffffff"};
+let netSelId=null;
+function setNetCaption(id){
+  if(!id){ netCaption.className="net-caption empty"; netCaption.textContent="노드를 클릭하면 이름과 분류가 여기에 표시됩니다."; return; }
+  const cls=nodeMap.get(id), col=CLASS_COLOR[cls]||"#6b6157", w=wikiOf(id);
+  netCaption.className="net-caption";
+  netCaption.innerHTML =
+    `<span class="nc-name">${id}</span>`+
+    `<span class="nc-cls" style="background:${col}">${cls}</span>`+
+    `<span class="nc-rel">연결 ${deg[id]||0}개</span>`+
+    (w?`<a href="${w}" target="_blank" rel="noopener">위키백과 →</a>`:"");
+}
+function netSelect(id){
+  if(netSelId && netSelId!==id){ try{netNodes.update({id:netSelId,font:NET_FONT});}catch(e){} }
+  if(id){ netSelId=id; try{netNodes.update({id,font:NET_FONT_SEL});}catch(e){} setNetCaption(id); }
+  else { if(netSelId){ try{netNodes.update({id:netSelId,font:NET_FONT});}catch(e){} } netSelId=null; setNetCaption(null); }
+}
+network.on("click", p=> netSelect(p.nodes && p.nodes.length ? p.nodes[0] : null));
+
 // 뷰 전환 (사진 노드 / 점 노드)
 document.querySelectorAll("#net-mode button").forEach(b=>{
   b.addEventListener("click",()=>{
     document.querySelectorAll("#net-mode button").forEach(x=>x.classList.remove("on"));
     b.classList.add("on"); netMode=b.dataset.mode;
     netNodes.update([...nodeMap].map(([n,cls])=>nodeObj(n,cls,netMode)));
+    if(netSelId) netNodes.update({id:netSelId,font:NET_FONT_SEL});   // 선택 라벨 유지
   });
 });
 
@@ -767,11 +898,14 @@ function buildBar(){
     `<div class="num">${n}</div></div>`).join("");
 }
 function buildHeat(){
-  const top=list.slice(0,48), mx=top[0][1], mn=top[top.length-1][1];
+  const top=list.slice(0,40), mx=top[0][1], mn=top[top.length-1][1];
   document.getElementById("wc-heat").innerHTML = top.map(([w,n])=>{
     const t=(n-mn)/Math.max(1,(mx-mn));           // 0~1
-    const bg=`hsl(${18+ (1-t)*30}, ${45+t*45}%, ${68-t*40}%)`;   // 빈도↑ → 진한 벽돌색
-    return `<div class="heat-cell" style="background:${bg}" title="${w}: ${n}회"><span class="hw">${w}</span><span class="hn">${n}회</span></div>`;
+    const side=Math.round(56 + t*110);            // 빈도↑ → 박스 크게 (56~166px)
+    const fs=Math.round(12.5 + t*13);             // 글자도 함께 확대
+    const bg=`hsl(${18+ (1-t)*30}, ${46+t*44}%, ${67-t*39}%)`;   // 빈도↑ → 진한 벽돌색
+    return `<div class="heat-cell" style="width:${side}px;height:${side}px;background:${bg}" title="${w}: ${n}회">`+
+      `<span class="hw" style="font-size:${fs}px">${w}</span><span class="hn">${n}회</span></div>`;
   }).join("");
 }
 let cloudDrawn=false;
@@ -779,7 +913,7 @@ function setWcMode(mode){
   document.querySelectorAll("#wc-mode button").forEach(x=>x.classList.toggle("on",x.dataset.mode===mode));
   document.getElementById("wordcloud").style.display = mode==="cloud"?"block":"none";
   document.getElementById("wc-bar").style.display = mode==="bar"?"block":"none";
-  document.getElementById("wc-heat").style.display = mode==="heat"?"grid":"none";
+  document.getElementById("wc-heat").style.display = mode==="heat"?"flex":"none";
   if(mode==="cloud"){ if(!cloudDrawn){drawCloud();cloudDrawn=true;} }
   else tip.style.opacity=0;
 }
