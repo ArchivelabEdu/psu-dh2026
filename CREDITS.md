@@ -28,6 +28,11 @@
 | 윤이상 | `person_윤이상.jpg` | Public domain | 김언호 | [Commons](https://commons.wikimedia.org/wiki/File%3APaik_Nam_June_and_Isang_Yun.jpg) |
 | 김동리 | `person_김동리.jpg` | Public domain | 경향신문 | [Commons](https://commons.wikimedia.org/wiki/File%3A%EA%B9%80%EB%8F%99%EB%A6%AC_%EC%9E%91%EA%B0%80.jpg) |
 
+## 히어로 배경 이미지
+| 용도 | 파일 | 라이선스 | 출처 | 원본 |
+|---|---|---|---|---|
+| 히어로 배경 | `exhibit/assets/hero.jpg` | CC0 (퍼블릭도메인) | Rijksmuseum · 1952년 부산항 | [Commons](https://commons.wikimedia.org/wiki/File:De_haven_van_Pusan,_NG-2009-136-22.jpg) |
+
 ## 자체 제작 도식(플레이스홀더)
 
 대표 이미지를 못 구했거나 저작권 확인이 안 돼 SVG로 대체한 항목:

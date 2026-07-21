@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>피란수도 부산 1950–1953 · 디지털 전시</title>
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="https://unpkg.com/vis-timeline@7.7.3/styles/vis-timeline-graph2d.min.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -16,24 +20,45 @@
   :root{
     --paper:#ffffff; --ink:#2b2622; --muted:#6b6157; --line:#e7e4df;
     --card:#ffffff; --accent:#8c3b2e; --accent2:#2f4858; --gold:#b08442;
+    --point:#d9482b;
+    --serif:"Nanum Myeongjo",Georgia,"Apple SD Gothic Neo",serif;
     --shadow:0 1px 3px rgba(43,38,34,.08),0 8px 24px rgba(43,38,34,.06);
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--paper);color:var(--ink);
-    font-family:"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",system-ui,sans-serif;
+    font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
     line-height:1.7;-webkit-font-smoothing:antialiased}
+  h1,h2{font-family:var(--serif);font-weight:800;letter-spacing:-.01em}
+  .ip-title,.story-title,.tl-detail .ttl,.nc-name{font-family:var(--serif)}
   a{color:var(--accent)}
-  header{padding:64px 24px 40px;text-align:center;
-    background:linear-gradient(180deg,#f2f0ec,var(--paper));border-bottom:1px solid var(--line)}
-  header .kicker{letter-spacing:.35em;font-size:12px;color:var(--gold);font-weight:700;text-transform:uppercase}
-  header h1{margin:.35em 0 .1em;font-size:clamp(28px,5vw,46px);font-weight:800;letter-spacing:-.02em}
-  header .years{font-size:clamp(15px,2.4vw,20px);color:var(--accent2);font-weight:600}
-  header p.lede{max-width:660px;margin:18px auto 0;color:var(--muted);font-size:15.5px}
-  nav{position:sticky;top:0;z-index:1000;background:rgba(255,255,255,.90);
-    backdrop-filter:blur(8px);border-bottom:1px solid var(--line);text-align:center;padding:10px}
-  nav a{margin:0 14px;text-decoration:none;color:var(--accent2);font-weight:600;font-size:14px;
+  /* 히어로 */
+  .hero{position:relative;isolation:isolate;min-height:580px;display:flex;align-items:center;
+    justify-content:center;text-align:center;padding:112px 24px 92px;color:#fff}
+  .hero::before{content:"";position:absolute;inset:0;z-index:-2;
+    background:url("assets/hero.jpg") center 42%/cover no-repeat}
+  .hero::after{content:"";position:absolute;inset:0;z-index:-1;
+    background:linear-gradient(180deg,rgba(18,22,28,.52),rgba(18,22,28,.32) 42%,rgba(18,22,28,.74))}
+  .hero-inner{max-width:760px}
+  .hero-mark{width:48px;height:48px;margin:0 auto 20px;display:block;
+    filter:drop-shadow(0 2px 7px rgba(0,0,0,.4))}
+  .hero .kicker{letter-spacing:.34em;font-size:12px;font-weight:700;text-transform:uppercase;color:#fff;opacity:.85}
+  .hero h1{margin:.28em 0 0;font-size:clamp(42px,8vw,76px);color:#fff;line-height:1.04;
+    text-shadow:0 2px 24px rgba(0,0,0,.4)}
+  .hero .rule{width:54px;height:3px;background:var(--point);margin:22px auto 18px;border-radius:2px}
+  .hero .years{font-family:var(--serif);font-size:clamp(16px,2.6vw,22px);color:#fff;font-weight:700;opacity:.96}
+  .hero p.lede{max-width:600px;margin:16px auto 0;color:rgba(255,255,255,.9);font-size:15.5px;line-height:1.8}
+  /* 내비게이션(브랜드 + 링크) */
+  nav{position:sticky;top:0;z-index:1000;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);padding:9px 22px;display:flex;align-items:center;
+    justify-content:space-between;gap:10px 12px;flex-wrap:wrap}
+  .brand{display:inline-flex;align-items:center;gap:9px;text-decoration:none;color:var(--ink);
+    font-weight:800;font-size:15px;letter-spacing:-.01em}
+  .brand .logo-mark{flex:0 0 auto;display:block}
+  .nav-links{display:flex;flex-wrap:wrap}
+  .nav-links a{margin:0 0 0 22px;text-decoration:none;color:var(--accent2);font-weight:600;font-size:14px;
     letter-spacing:.03em;padding-bottom:2px;border-bottom:1px solid transparent;transition:border-color .15s,color .15s}
-  nav a:hover{color:var(--accent);border-bottom-color:var(--accent)}
+  .nav-links a:first-child{margin-left:0}
+  .nav-links a:hover{color:var(--point);border-bottom-color:var(--point)}
   main{max-width:1080px;margin:0 auto;padding:16px}
   section{margin:44px 0;background:var(--card);border:1px solid var(--line);
     border-radius:14px;box-shadow:var(--shadow);overflow:hidden;scroll-margin-top:56px}
@@ -174,20 +199,36 @@
 </head>
 <body>
 
-<header>
-  <div class="kicker">DH 이해하기 III · 부산 인문자료 아카이브</div>
-  <h1>피란수도 부산</h1>
-  <div class="years">1950 — 1953 · 임시수도의 기억</div>
-  <p class="lede">한국전쟁기 임시수도가 된 항구도시 부산. 피란민과 예술가, 정부와 시장이 얽힌
-    3년의 기억을 <b>장소·사건·관계·언어</b> 네 가지 시선으로 펼쳐 본다.</p>
+<header class="hero" id="top">
+  <div class="hero-inner">
+    <svg class="hero-mark" viewBox="0 0 28 28" aria-hidden="true">
+      <rect width="28" height="28" rx="7" fill="var(--point)"/>
+      <path d="M6 21 h5 v-5 h5 v-5 h5" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div class="kicker">DH 이해하기 III · 부산 인문자료 아카이브</div>
+    <h1>피란수도 부산</h1>
+    <div class="rule"></div>
+    <div class="years">1950 — 1953 · 임시수도의 기억</div>
+    <p class="lede">한국전쟁기 임시수도가 된 항구도시 부산. 피란민과 예술가, 정부와 시장이 얽힌
+      3년의 기억을 <b>장소·사건·관계·언어</b> 네 가지 시선으로 펼쳐 본다.</p>
+  </div>
 </header>
 
 <nav>
-  <a href="#map">지도</a>
-  <a href="#timeline">연표</a>
-  <a href="#network">관계망</a>
-  <a href="#words">언어</a>
-  <a href="#about">해설</a>
+  <a class="brand" href="#top">
+    <svg class="logo-mark" viewBox="0 0 28 28" width="26" height="26" aria-hidden="true">
+      <rect width="28" height="28" rx="7" fill="var(--point)"/>
+      <path d="M6 21 h5 v-5 h5 v-5 h5" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span>피란수도 부산</span>
+  </a>
+  <div class="nav-links">
+    <a href="#map">지도</a>
+    <a href="#timeline">연표</a>
+    <a href="#network">관계망</a>
+    <a href="#words">언어</a>
+    <a href="#about">해설</a>
+  </div>
 </nav>
 
 <main>
