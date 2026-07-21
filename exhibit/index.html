@@ -14,8 +14,8 @@
 
 <style>
   :root{
-    --paper:#f4efe6; --ink:#2b2622; --muted:#6b6157; --line:#d9cfbe;
-    --card:#fbf8f2; --accent:#8c3b2e; --accent2:#2f4858; --gold:#b08442;
+    --paper:#ffffff; --ink:#2b2622; --muted:#6b6157; --line:#e7e4df;
+    --card:#ffffff; --accent:#8c3b2e; --accent2:#2f4858; --gold:#b08442;
     --shadow:0 1px 3px rgba(43,38,34,.08),0 8px 24px rgba(43,38,34,.06);
   }
   *{box-sizing:border-box}
@@ -24,12 +24,12 @@
     line-height:1.7;-webkit-font-smoothing:antialiased}
   a{color:var(--accent)}
   header{padding:64px 24px 40px;text-align:center;
-    background:linear-gradient(180deg,#efe7d8,var(--paper));border-bottom:1px solid var(--line)}
+    background:linear-gradient(180deg,#f2f0ec,var(--paper));border-bottom:1px solid var(--line)}
   header .kicker{letter-spacing:.35em;font-size:12px;color:var(--gold);font-weight:700;text-transform:uppercase}
   header h1{margin:.35em 0 .1em;font-size:clamp(28px,5vw,46px);font-weight:800;letter-spacing:-.02em}
   header .years{font-size:clamp(15px,2.4vw,20px);color:var(--accent2);font-weight:600}
   header p.lede{max-width:660px;margin:18px auto 0;color:var(--muted);font-size:15.5px}
-  nav{position:sticky;top:0;z-index:1000;background:rgba(244,239,230,.92);
+  nav{position:sticky;top:0;z-index:1000;background:rgba(255,255,255,.90);
     backdrop-filter:blur(8px);border-bottom:1px solid var(--line);text-align:center;padding:10px}
   nav a{margin:0 14px;text-decoration:none;color:var(--accent2);font-weight:600;font-size:14px;
     letter-spacing:.03em;padding-bottom:2px;border-bottom:1px solid transparent;transition:border-color .15s,color .15s}
@@ -42,7 +42,7 @@
   .sec-head h2{margin:.2em 0 .25em;font-size:24px;letter-spacing:-.01em}
   .sec-head p.sub{margin:0 0 6px;color:var(--muted);font-size:14.5px}
   /* 핵심 내용 서술 */
-  .lead{margin:10px 0 4px;padding:14px 16px;background:#f3ecdd;border-left:3px solid var(--gold);
+  .lead{margin:10px 0 4px;padding:14px 16px;background:#f6f4f0;border-left:3px solid var(--gold);
     border-radius:0 8px 8px 0;font-size:14px;color:#4a423a;line-height:1.75}
   .lead b{color:var(--accent2)}
   .viz{padding:14px 26px 26px}
@@ -55,7 +55,7 @@
   .seg button.on{background:var(--accent2);color:#fff}
   .btn{border:1px solid var(--line);background:#fff;color:var(--accent2);font:inherit;font-size:13px;
     font-weight:600;padding:7px 12px;border-radius:8px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
-  .btn:hover{background:#efe7d8}
+  .btn:hover{background:#f2f0ec}
   /* 지도 */
   .map-wrap{display:flex;gap:14px;height:520px}
   .map-wrap #map-view{flex:1 1 auto;height:100%;border-radius:10px;border:1px solid var(--line)}
@@ -63,7 +63,7 @@
   .info-panel{flex:0 0 320px;width:320px;border:1px solid var(--line);border-radius:10px;
     background:#fff;overflow:hidden;display:flex;flex-direction:column}
   .ip-tabs{display:flex;border-bottom:1px solid var(--line);flex:0 0 auto}
-  .ip-tabs button{flex:1;border:0;background:#fbf8f2;color:var(--muted);font:inherit;font-size:13px;
+  .ip-tabs button{flex:1;border:0;background:#f6f4f1;color:var(--muted);font:inherit;font-size:13px;
     font-weight:700;padding:11px 0;cursor:pointer;border-right:1px solid var(--line)}
   .ip-tabs button:last-child{border-right:0}
   .ip-tabs button.on{background:#fff;color:var(--accent2);box-shadow:inset 0 -2px 0 var(--accent2)}
@@ -73,8 +73,8 @@
   .ip-list{list-style:none;margin:0;padding:6px}
   .ip-list li{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:8px;cursor:pointer;
     font-size:14px;transition:background .12s}
-  .ip-list li:hover{background:#f3ecdd}
-  .ip-list li.active{background:#f6e7dd}
+  .ip-list li:hover{background:#f6f4f0}
+  .ip-list li.active{background:#f0ede8}
   .ip-list .lc{width:11px;height:11px;border-radius:50%;flex:0 0 auto;border:1px solid rgba(0,0,0,.12)}
   .ip-list .ln{font-weight:600;color:#3a332d}
   .ip-list .lt{margin-left:auto;font-size:11px;color:#9a8f80}
@@ -91,7 +91,7 @@
   .story-nav{display:flex;align-items:center;gap:8px;padding:12px 16px;border-top:1px solid var(--line)}
   .story-nav button{border:1px solid var(--line);background:#fff;color:var(--accent2);font:inherit;
     font-size:13px;font-weight:700;padding:6px 12px;border-radius:7px;cursor:pointer}
-  .story-nav button:hover:not(:disabled){background:#efe7d8}
+  .story-nav button:hover:not(:disabled){background:#f2f0ec}
   .story-nav button:disabled{opacity:.4;cursor:default}
   .story-nav .prog{margin-left:auto;font-size:12px;color:var(--muted);font-weight:700}
   .ip-thumb{width:100%;height:178px;object-fit:cover;display:block;background:#eee}
@@ -116,7 +116,7 @@
   .tl-detail .body p{margin:0 0 10px;font-size:14px;color:#463f38}
   .tl-detail .credit{font-size:11px;color:#9a8f80;margin-top:8px}
   /* 관계망 */
-  #network-view{height:560px;border:1px solid var(--line);border-radius:10px;background:#fbfaf7}
+  #network-view{height:560px;border:1px solid var(--line);border-radius:10px;background:#ffffff}
   .net-caption{margin-top:12px;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
     background:#fff;min-height:52px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
   .net-caption.empty{color:var(--muted);font-size:14px}
@@ -134,7 +134,7 @@
   #wc-bar{padding:18px 22px;display:none}
   .bar-row{display:flex;align-items:center;gap:10px;margin:5px 0;font-size:13px}
   .bar-row .lab{flex:0 0 92px;text-align:right;font-weight:700;color:#463f38}
-  .bar-row .track{flex:1;background:#f0e8d8;border-radius:5px;height:18px;overflow:hidden}
+  .bar-row .track{flex:1;background:#eeece7;border-radius:5px;height:18px;overflow:hidden}
   .bar-row .fill{height:100%;border-radius:5px}
   .bar-row .num{flex:0 0 30px;color:var(--muted);font-weight:700}
   #wc-heat{padding:18px;display:none;flex-wrap:wrap;gap:8px;align-content:flex-start;align-items:flex-start}
@@ -147,7 +147,7 @@
   .legend{display:flex;flex-wrap:wrap;gap:10px 16px;margin:6px 0 2px;font-size:13px;color:var(--muted)}
   .legend span{display:inline-flex;align-items:center;gap:6px}
   .legend .legend-item{cursor:pointer;user-select:none;padding:2px 6px;border-radius:6px;transition:opacity .15s,background .15s}
-  .legend .legend-item:hover{background:#efe7d8}
+  .legend .legend-item:hover{background:#f2f0ec}
   .legend .legend-item.off{opacity:.4;text-decoration:line-through}
   .dot{width:12px;height:12px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.15)}
   .leaflet-popup-content{font-family:inherit;font-size:13.5px}
@@ -162,7 +162,7 @@
   .about-prose p{font-size:14.5px;color:#413a33;margin:0 0 12px}
   footer{max-width:1080px;margin:24px auto 60px;padding:20px 26px;color:var(--muted);
     font-size:13px;border-top:1px solid var(--line)}
-  footer code{background:#efe7d8;padding:1px 5px;border-radius:4px}
+  footer code{background:#f2f0ec;padding:1px 5px;border-radius:4px}
   @media(max-width:760px){
     .map-wrap{flex-direction:column;height:auto}
     .map-wrap #map-view{height:400px}
@@ -787,7 +787,7 @@ const netNodes = new vis.DataSet([...nodeMap].map(([n,cls])=>nodeObj(n,cls,netMo
 const netEdges = new vis.DataSet(TRIPLES.map(([s,p,o],i)=>({
   id:i, from:s, to:o, label:p.replace(/\(.*\)/,""),
   arrows:"to", color:{color:"#c3b8a5",highlight:"#8c3b2e"},
-  font:{size:10,color:"#8a7f72",strokeWidth:3,strokeColor:"#fbfaf7"}
+  font:{size:10,color:"#8a7f72",strokeWidth:3,strokeColor:"#ffffff"}
 })));
 const network = new vis.Network(document.getElementById("network-view"),
   {nodes:netNodes,edges:netEdges},{
