@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">
+<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#3a7d6e"/><stop offset="1" stop-color="#3a7d6e" stop-opacity="0.72"/></linearGradient></defs>
+<rect width="240" height="240" fill="url(#g)"/>
+<text x="120" y="120" font-size="76" text-anchor="middle" dominant-baseline="central">📖</text>
+<text x="120" y="196" font-size="21" fill="#fff" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans KR, sans-serif" font-weight="700">밀다원시대</text>
+<text x="120" y="222" font-size="12" fill="#ffffffcc" text-anchor="middle" font-family="sans-serif">대표 이미지 없음 · 도식</text>
+</svg>

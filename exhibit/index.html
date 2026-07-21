@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>피란수도 부산 1950–1953 · 디지털 전시</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/vis-timeline@7.7.3/styles/vis-timeline-graph2d.min.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/vis-timeline@7.7.3/standalone/umd/vis-timeline-graph2d.min.js"></script>
+<script src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
+<script src="https://unpkg.com/wordcloud@1.2.2/src/wordcloud2.js"></script>
+
+<style>
+  :root{
+    --paper:#f4efe6; --ink:#2b2622; --muted:#6b6157; --line:#d9cfbe;
+    --card:#fbf8f2; --accent:#8c3b2e; --accent2:#2f4858; --gold:#b08442;
+    --shadow:0 1px 3px rgba(43,38,34,.08),0 8px 24px rgba(43,38,34,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",system-ui,sans-serif;
+    line-height:1.7;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+  header{padding:64px 24px 40px;text-align:center;
+    background:linear-gradient(180deg,#efe7d8,var(--paper));border-bottom:1px solid var(--line)}
+  header .kicker{letter-spacing:.35em;font-size:12px;color:var(--gold);font-weight:700;text-transform:uppercase}
+  header h1{margin:.35em 0 .1em;font-size:clamp(28px,5vw,46px);font-weight:800;letter-spacing:-.02em}
+  header .years{font-size:clamp(15px,2.4vw,20px);color:var(--accent2);font-weight:600}
+  header p.lede{max-width:660px;margin:18px auto 0;color:var(--muted);font-size:15.5px}
+  nav{position:sticky;top:0;z-index:1000;background:rgba(244,239,230,.92);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--line);text-align:center;padding:10px}
+  nav a{margin:0 9px;text-decoration:none;color:var(--accent2);font-weight:600;font-size:14px}
+  nav a:hover{color:var(--accent)}
+  main{max-width:1080px;margin:0 auto;padding:16px}
+  section{margin:44px 0;background:var(--card);border:1px solid var(--line);
+    border-radius:14px;box-shadow:var(--shadow);overflow:hidden;scroll-margin-top:56px}
+  .sec-head{padding:22px 26px 4px}
+  .sec-head .tag{font-size:12px;letter-spacing:.2em;color:var(--gold);font-weight:700}
+  .sec-head h2{margin:.2em 0 .25em;font-size:24px;letter-spacing:-.01em}
+  .sec-head p.sub{margin:0 0 6px;color:var(--muted);font-size:14.5px}
+  /* 핵심 내용 서술 */
+  .lead{margin:10px 0 4px;padding:14px 16px;background:#f3ecdd;border-left:3px solid var(--gold);
+    border-radius:0 8px 8px 0;font-size:14px;color:#4a423a;line-height:1.75}
+  .lead b{color:var(--accent2)}
+  .viz{padding:14px 26px 26px}
+  /* 도구 바 (뷰 토글 등) */
+  .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:2px 0 12px}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
+  .seg button{border:0;background:#fff;color:var(--muted);font:inherit;font-size:13px;font-weight:600;
+    padding:7px 13px;cursor:pointer;border-left:1px solid var(--line)}
+  .seg button:first-child{border-left:0}
+  .seg button.on{background:var(--accent2);color:#fff}
+  .btn{border:1px solid var(--line);background:#fff;color:var(--accent2);font:inherit;font-size:13px;
+    font-weight:600;padding:7px 12px;border-radius:8px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+  .btn:hover{background:#efe7d8}
+  /* 지도 */
+  .map-wrap{display:flex;gap:14px;height:520px}
+  .map-wrap #map-view{flex:1 1 auto;height:100%;border-radius:10px;border:1px solid var(--line)}
+  .map-wrap:fullscreen{height:100vh;background:var(--paper);padding:16px}
+  .info-panel{flex:0 0 300px;width:300px;border:1px solid var(--line);border-radius:10px;
+    background:#fff;overflow:auto}
+  .ip-hint{padding:26px 20px;color:var(--muted);font-size:14px;text-align:center}
+  .ip-thumb{width:100%;height:178px;object-fit:cover;display:block;background:#eee}
+  .ip-body{padding:14px 16px}
+  .ip-title{font-size:18px;font-weight:800;letter-spacing:-.01em}
+  .ip-chip{display:inline-block;margin:6px 0;padding:2px 9px;border-radius:20px;font-size:12px;
+    font-weight:700;color:#fff}
+  .ip-desc{margin:6px 0 10px;font-size:14px;color:#463f38;line-height:1.7}
+  .ip-link{display:inline-block;font-size:13px;font-weight:700;text-decoration:none;
+    padding:6px 11px;border:1px solid var(--accent);border-radius:8px;color:var(--accent)}
+  .ip-link:hover{background:var(--accent);color:#fff}
+  .ip-credit{margin-top:12px;font-size:11px;color:#9a8f80;line-height:1.5;border-top:1px dashed var(--line);padding-top:8px}
+  /* 연표 */
+  #timeline-view{height:360px;border:1px solid var(--line);border-radius:10px;background:#fff}
+  .tl-detail{display:flex;gap:14px;margin-top:14px;padding:14px;border:1px solid var(--line);
+    border-radius:10px;background:#fff;min-height:120px}
+  .tl-detail.empty{align-items:center;justify-content:center;color:var(--muted);font-size:14px}
+  .tl-detail img{width:150px;height:120px;object-fit:cover;border-radius:8px;flex:0 0 auto;background:#eee}
+  .tl-detail .body{flex:1}
+  .tl-detail .date{font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.05em}
+  .tl-detail .ttl{font-size:19px;font-weight:800;margin:2px 0 4px}
+  .tl-detail .body p{margin:0 0 10px;font-size:14px;color:#463f38}
+  .tl-detail .credit{font-size:11px;color:#9a8f80;margin-top:8px}
+  /* 관계망 */
+  #network-view{height:560px;border:1px solid var(--line);border-radius:10px;background:#fbfaf7}
+  /* 언어 */
+  .wc-stage{position:relative;border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden}
+  #wordcloud{height:460px;width:100%;display:block}
+  #wc-tooltip{position:absolute;pointer-events:none;background:#2b2622;color:#fff;font-size:13px;
+    font-weight:700;padding:4px 9px;border-radius:6px;opacity:0;transition:opacity .1s;white-space:nowrap;z-index:5}
+  #wc-bar{padding:18px 22px;display:none}
+  .bar-row{display:flex;align-items:center;gap:10px;margin:5px 0;font-size:13px}
+  .bar-row .lab{flex:0 0 92px;text-align:right;font-weight:700;color:#463f38}
+  .bar-row .track{flex:1;background:#f0e8d8;border-radius:5px;height:18px;overflow:hidden}
+  .bar-row .fill{height:100%;border-radius:5px}
+  .bar-row .num{flex:0 0 30px;color:var(--muted);font-weight:700}
+  #wc-heat{padding:16px;display:none;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px}
+  .heat-cell{border-radius:7px;padding:9px 8px;color:#fff;text-align:center;line-height:1.25;
+    cursor:default;transition:transform .1s}
+  .heat-cell:hover{transform:scale(1.06)}
+  .heat-cell .hw{font-size:13px;font-weight:700;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .heat-cell .hn{font-size:11px;opacity:.85}
+  .legend{display:flex;flex-wrap:wrap;gap:10px 16px;margin:6px 0 2px;font-size:13px;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend .legend-item{cursor:pointer;user-select:none;padding:2px 6px;border-radius:6px;transition:opacity .15s,background .15s}
+  .legend .legend-item:hover{background:#efe7d8}
+  .legend .legend-item.off{opacity:.4;text-decoration:line-through}
+  .dot{width:12px;height:12px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.15)}
+  .leaflet-popup-content{font-family:inherit;font-size:13.5px}
+  .leaflet-popup-content b{color:var(--accent)}
+  .map-fs-btn{background:#fff;border:0;width:34px;height:34px;cursor:pointer;font-size:16px;line-height:34px;text-align:center}
+  /* 종합 해설 */
+  #about .viz{padding:8px 30px 34px}
+  .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px}
+  .about-card{border:1px solid var(--line);border-radius:10px;background:#fff;padding:16px 18px}
+  .about-card h4{margin:0 0 6px;font-size:15px;color:var(--accent2)}
+  .about-card p{margin:0;font-size:13.5px;color:#4a423a}
+  .about-prose p{font-size:14.5px;color:#413a33;margin:0 0 12px}
+  footer{max-width:1080px;margin:24px auto 60px;padding:20px 26px;color:var(--muted);
+    font-size:13px;border-top:1px solid var(--line)}
+  footer code{background:#efe7d8;padding:1px 5px;border-radius:4px}
+  @media(max-width:760px){
+    .map-wrap{flex-direction:column;height:auto}
+    .map-wrap #map-view{height:400px}
+    .info-panel{flex:auto;width:auto}
+    .about-grid{grid-template-columns:1fr}
+    .tl-detail{flex-direction:column}.tl-detail img{width:100%;height:170px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="kicker">DH 이해하기 III · 부산 인문자료 아카이브</div>
+  <h1>피란수도 부산</h1>
+  <div class="years">1950 — 1953 · 임시수도의 기억</div>
+  <p class="lede">한국전쟁기 임시수도가 된 항구도시 부산. 피란민과 예술가, 정부와 시장이 얽힌
+    3년의 기억을 <b>장소·사건·관계·언어</b> 네 가지 시선으로 펼쳐 본다.</p>
+</header>
+
+<nav>
+  <a href="#map">🗺️ 지도</a>
+  <a href="#timeline">🕰️ 연표</a>
+  <a href="#network">🕸️ 관계망</a>
+  <a href="#words">☁️ 언어</a>
+  <a href="#about">📖 해설</a>
+</nav>
+
+<main>
+  <section id="map">
+    <div class="sec-head">
+      <div class="tag">PLACE · 장소</div>
+      <h2>피란의 지도</h2>
+      <p class="sub">마커를 누르면 오른쪽에 대표 이미지와 정보가, 범례를 누르면 유형별 필터가 작동합니다.</p>
+      <div class="lead">피란수도의 지리는 <b>평지의 권력</b>과 <b>산비탈의 삶</b>으로 갈렸다. 원도심 평지에는
+        임시수도 정부청사·관저·시장·다방이 몰렸고, 피란민은 우암동·아미동·감천 등 산비탈 마을로 밀려 올라갔다.
+        범례로 유형을 걸러 보면 권력·상업·문화는 원도심에, 정착과 생존은 산복도로에 자리했음이 한눈에 드러난다.</p>
+      <div class="toolbar">
+        <button class="btn" id="map-fs">⛶ 전체 화면</button>
+        <div class="legend" id="map-legend"></div>
+      </div>
+    </div>
+    <div class="viz">
+      <div class="map-wrap" id="map-wrap">
+        <div id="map-view"></div>
+        <aside class="info-panel" id="map-info"><div class="ip-hint">마커를 클릭하면<br>장소의 대표 이미지와 정보가<br>여기에 표시됩니다.</div></aside>
+      </div>
+    </div>
+  </section>
+
+  <section id="timeline">
+    <div class="sec-head">
+      <div class="tag">EVENT · 사건</div>
+      <h2>임시수도의 연표</h2>
+      <p class="sub">항목을 누르면 대표 이미지·설명과 함께 위키백과 등 대표 사이트 링크가 나타납니다.</p>
+      <div class="lead">1950년 8월 정부 이전에서 1953년 8월 서울 환도까지, 임시수도의 3년은 세 흐름이 겹친다 —
+        <b>전세</b>(1·4 후퇴), <b>정치</b>(부산정치파동·발췌개헌), <b>재난</b>(국제시장·부산역전 대화재).
+        1952년의 정치 격변과 1953년의 잇단 대화재가 종전 직전 도시의 혼란을 압축한다.</div>
+    </div>
+    <div class="viz">
+      <div id="timeline-view"></div>
+      <div class="tl-detail empty" id="tl-detail">연표의 사건을 클릭하면 상세 정보가 표시됩니다.</div>
+    </div>
+  </section>
+
+  <section id="network">
+    <div class="sec-head">
+      <div class="tag">RELATION · 관계</div>
+      <h2>인물·장소·작품의 관계망</h2>
+      <p class="sub">노드는 개체, 선은 관계(서술어), 색은 클래스입니다. 범례를 누르면 클래스별 필터가, 뷰 전환으로 원 안 사진을 볼 수 있습니다.</p>
+      <div class="lead">관계망은 ‘피란’이라는 하나의 사건이 인물·장소·작품·정부를 어떻게 엮었는지 보여준다.
+        <b>피란민</b>은 여러 정착지로 뻗어 가장 많은 연결을 가지며, <b>광복동·영도</b>는 예술·문학의 결절점이 된다.
+        이중섭 → 원산·영도·은지화로 이어지는 경로는 개인의 피란이 곧 창작의 조건이었음을 드러낸다.</div>
+      <div class="toolbar">
+        <div class="seg" id="net-mode">
+          <button data-mode="image" class="on">🖼 사진 노드</button>
+          <button data-mode="dot">● 점 노드</button>
+        </div>
+        <div class="legend" id="net-legend"></div>
+      </div>
+    </div>
+    <div class="viz"><div id="network-view"></div></div>
+  </section>
+
+  <section id="words">
+    <div class="sec-head">
+      <div class="tag">TEXT · 언어</div>
+      <h2>기록 속의 말들</h2>
+      <p class="sub">조사를 떼고 빈도를 센 한국어 단어. 항목에 마우스를 올리면 등장 횟수가 나타납니다. 뷰를 바꿔 같은 데이터를 세 방식으로 읽어 보세요.</p>
+      <div class="lead">본문에서 가장 자주 불린 말은 <b>부산·피란(민)·도시·골목</b>이다. 상위어는 ‘임시수도의 위상’(부산·정부·도시)과
+        ‘피란민의 생활공간’(골목·산복도로·시장·판잣집) 두 축으로 갈린다.</div>
+      <div class="toolbar">
+        <div class="seg" id="wc-mode">
+          <button data-mode="cloud" class="on">☁️ 워드클라우드</button>
+          <button data-mode="bar">📊 막대그래프</button>
+          <button data-mode="heat">🔥 히트맵</button>
+        </div>
+      </div>
+    </div>
+    <div class="viz">
+      <div class="wc-stage" id="wc-stage">
+        <canvas id="wordcloud"></canvas>
+        <div id="wc-bar"></div>
+        <div id="wc-heat"></div>
+        <div id="wc-tooltip"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="about">
+    <div class="sec-head">
+      <div class="tag">SYNTHESIS · 종합 해설</div>
+      <h2>네 시선이 만나는 곳 — 피란수도 부산 읽기</h2>
+      <p class="sub">지도·연표·관계망·언어를 하나로 모아, 이 데이터가 들려주는 이야기를 정리합니다.</p>
+    </div>
+    <div class="viz">
+      <div class="about-prose">
+        <p>1950년 여름, 전쟁은 한 나라의 심장을 남쪽 항구도시로 옮겨 놓았다. <b>지도</b>는 그 심장이 어떻게
+          두 층위로 나뉘었는지 보여준다 — 정부청사·관저·시장·다방이 몰린 원도심의 평지와, 피란민이 판잣집을 지은
+          산복도로의 비탈. <b>연표</b>는 그 3년이 결코 평온한 피란이 아니었음을 말한다. 1·4 후퇴로 다시 밀려든
+          사람들, 대통령 직선제를 둘러싼 부산정치파동과 발췌개헌, 그리고 종전 직전 도시를 태운 두 차례의 대화재가
+          숨 가쁘게 이어졌다.</p>
+        <p><b>관계망</b>은 이 사건들 뒤에서 사람과 장소가 어떻게 얽혔는지 드러낸다. 피란민이라는 집단은 국제시장·40계단·
+          부산항으로 모이고 우암동·아미동·감천으로 정착하며 도시 전체로 뻗어 나간다. 한편 이중섭은 원산에서 영도로
+          피란해 은지화를 남기고, 김동리는 광복동 밀다원다방에서 훗날 소설이 될 시대를 이야기했다. 피란은 생존의 문제인
+          동시에, 예술과 문학이 태어나는 조건이기도 했다. <b>언어</b>는 이 모든 것을 관통하는 단어들을 빈도로 비춘다 —
+          ‘부산’과 ‘피란민’, ‘도시’와 ‘골목’이 가장 크게 울린다.</p>
+        <p>네 시선은 결국 하나의 문장으로 모인다: <b>임시수도 부산은 권력의 무대이자 피란민의 삶터였고, 재난의 현장이자
+          예술의 산실이었다.</b> 정전협정과 서울 환도로 임시수도의 시간은 끝났지만, 그 기억은 지금도 원도심 골목과
+          산복도로에 층층이 남아 있다.</p>
+      </div>
+      <div class="about-grid">
+        <div class="about-card"><h4>🗺️ 지도 — 장소</h4><p>15개 장소를 유형별 색으로. 원도심의 권력·상업·문화와 산비탈의 정착촌이 공간적으로 갈린다. 마커 클릭 시 대표 이미지·설명, 전체화면·유형 필터 지원.</p></div>
+        <div class="about-card"><h4>🕰️ 연표 — 사건</h4><p>1950–53년 8개 사건을 시간축에. 전세·정치·재난 세 흐름이 교차한다. 사건 클릭 시 대표 이미지와 위키백과 링크로 연결.</p></div>
+        <div class="about-card"><h4>🕸️ 관계망 — 관계</h4><p>25개 트리플(주어–서술어–목적어)을 지식그래프로. 클래스(인물·장소·사건·작품·집단)별 필터, 원 안 사진 뷰, 살아 움직이는 배치.</p></div>
+        <div class="about-card"><h4>☁️ 언어 — 텍스트</h4><p>서술형 본문의 단어 빈도. 조사를 떼고 상위어를 워드클라우드·막대그래프·히트맵 세 방식으로. 호버 시 등장 횟수 표시.</p></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  이 전시는 워크숍 실습 데이터(<code>places.csv</code> · <code>events.csv</code> · <code>triples.csv</code> · <code>texts.txt</code>)를
+  단일 페이지로 엮은 <b>레퍼런스 예시</b>입니다. 좌표·정보는 교육용 근사값이며,
+  온톨로지 설계는 <code>../ontology/design.md</code>, 이미지 출처·라이선스는 <code>../CREDITS.md</code>를 참고하세요.<br>
+  대표 이미지: Wikimedia Commons (PD·CC0·CC BY / 일부 자체 도식) · 라이브러리: Leaflet · vis-timeline · vis-network · wordcloud2.js
+</footer>
+
+<script>
+/* ===== 데이터 (실습 CSV/텍스트를 인라인 임베드 — file://로 바로 열림) ===== */
+const PLACES = [
+  {id:"p1",name:"부산",lat:35.1000,lng:129.0350,type:"도시",desc:"한국전쟁기 임시수도가 된 항구도시"},
+  {id:"p2",name:"영도",lat:35.0912,lng:129.0679,type:"섬",desc:"피란 예술가와 피란민이 머문 섬"},
+  {id:"p3",name:"국제시장",lat:35.0985,lng:129.0286,type:"시장",desc:"피란민 상권의 중심이자 1953년 대화재가 난 곳"},
+  {id:"p4",name:"40계단",lat:35.1078,lng:129.0357,type:"장소",desc:"피란민이 모이고 이산가족이 만나던 계단"},
+  {id:"p5",name:"부산항",lat:35.0966,lng:129.0420,type:"항구",desc:"구호물자와 피란민이 오가던 관문"},
+  {id:"p6",name:"자갈치시장",lat:35.0965,lng:129.0305,type:"시장",desc:"피란기에 형성된 수산물 시장"},
+  {id:"p7",name:"광복동",lat:35.0989,lng:129.0323,type:"거리",desc:"피란 문화예술인이 모이던 번화가"},
+  {id:"p8",name:"밀다원다방",lat:35.0992,lng:129.0320,type:"다방",desc:"피란 문인들의 사랑방"},
+  {id:"p9",name:"임시수도정부청사",lat:35.0995,lng:129.0240,type:"관청",desc:"임시수도기 정부청사(현 동아대 석당박물관)"},
+  {id:"p10",name:"임시수도대통령관저",lat:35.0972,lng:129.0228,type:"관저",desc:"임시수도기 대통령 관저(현 임시수도기념관)"},
+  {id:"p11",name:"보수동책방골목",lat:35.1016,lng:129.0270,type:"거리",desc:"피란기 헌책방이 모여 형성된 골목"},
+  {id:"p12",name:"우암동소막마을",lat:35.1207,lng:129.0665,type:"마을",desc:"소 막사를 개조해 피란민이 정착한 마을"},
+  {id:"p13",name:"아미동비석마을",lat:35.0960,lng:129.0175,type:"마을",desc:"일제기 공동묘지 위에 형성된 피란 정착촌"},
+  {id:"p14",name:"감천문화마을",lat:35.0975,lng:129.0107,type:"마을",desc:"산비탈에 형성된 피란 정착 마을"},
+  {id:"p15",name:"원산",lat:39.1538,lng:127.4444,type:"도시",desc:"이중섭 등 예술가들의 피란 출발지(현 북한)"}
+];
+const EVENTS = [
+  {id:"e1",date:"1950-08-18",title:"정부 임시수도 부산 이전",place:"부산",desc:"대한민국 정부가 부산을 임시수도로 정하고 이전"},
+  {id:"e2",date:"1951-01-04",title:"1·4 후퇴",place:"부산",desc:"서울 재함락으로 정부와 피란민이 다시 부산으로 집결"},
+  {id:"e3",date:"1952-05-26",title:"부산정치파동",place:"부산",desc:"대통령 직선제 개헌을 둘러싼 정치적 충돌"},
+  {id:"e4",date:"1952-07-04",title:"발췌개헌",place:"부산",desc:"대통령 직선제를 담은 개헌안 통과"},
+  {id:"e5",date:"1953-01-30",title:"국제시장 대화재",place:"국제시장",desc:"국제시장 일대를 태운 큰불"},
+  {id:"e6",date:"1953-07-27",title:"정전협정 체결",place:"부산",desc:"한국전쟁 정전협정 체결"},
+  {id:"e7",date:"1953-08-15",title:"정부 서울 환도",place:"부산",desc:"임시수도 기능을 마치고 정부가 서울로 환도"},
+  {id:"e8",date:"1953-11-27",title:"부산역전 대화재",place:"부산항",desc:"부산역 앞 일대를 태운 대형 화재"}
+];
+const TRIPLES = [
+  ["이중섭","evacuatedFrom(피란출발)","원산"],["이중섭","stayedAt(머묾)","영도"],
+  ["이중섭","created(창작)","은지화"],["은지화","createdAt(제작장소)","영도"],
+  ["김환기","evacuatedTo(피란)","부산"],["김환기","workedAt(활동)","광복동"],
+  ["윤이상","workedAt(활동)","부산"],["김동리","frequented(자주드나듦)","밀다원다방"],
+  ["김동리","wrote(집필)","밀다원시대"],["밀다원시대","setIn(배경)","광복동"],
+  ["밀다원다방","locatedIn(위치)","광복동"],["대한민국정부","relocatedTo(이전)","부산"],
+  ["대한민국정부","usedAsOffice(청사사용)","임시수도정부청사"],["이승만","residedAt(거주)","임시수도대통령관저"],
+  ["이승만","involvedIn(관여)","부산정치파동"],["발췌개헌","partOf(일부)","부산정치파동"],
+  ["정부임시수도부산이전","occurredAt(발생)","부산"],["국제시장대화재","occurredAt(발생)","국제시장"],
+  ["부산역전대화재","occurredAt(발생)","부산항"],["피란민","gatheredAt(집결)","국제시장"],
+  ["피란민","gatheredAt(집결)","40계단"],["피란민","gatheredAt(집결)","부산항"],
+  ["피란민","settledAt(정착)","우암동소막마을"],["피란민","settledAt(정착)","아미동비석마을"],
+  ["피란민","settledAt(정착)","감천문화마을"],["헌책방","formedAt(형성)","보수동책방골목"]
+];
+const TEXT = `한국전쟁이 터지자 부산은 대한민국의 임시수도가 되었다. 전국에서 밀려든 피란민이 부산항으로 쏟아져 들어왔고, 좁은 원도심은 순식간에 사람들로 가득 찼다. 정부 청사가 부민동에 자리 잡았고, 대통령 관저와 관청이 임시로 문을 열었다. 도시는 전쟁의 한복판에서 나라의 심장 역할을 떠맡았다.
+피란민은 산비탈로 올라갔다. 우암동 소막마을에서는 소를 키우던 막사를 개조해 사람이 살았고, 아미동 비석마을에서는 공동묘지의 비석 위에 판잣집을 지었다. 감천마을의 계단식 골목에도 집이 빼곡히 들어찼다. 산복도로를 따라 이어진 판잣집과 좁은 골목은 피란 도시의 풍경이 되었다.
+국제시장은 피란 상권의 중심이었다. 구호물자와 밀수품, 미군 부대에서 흘러나온 물건이 뒤섞여 팔렸고, 자갈치시장에는 생선을 파는 아지매들의 목소리가 넘쳤다. 40계단은 헤어진 가족이 서로를 찾고 기다리던 만남의 장소였다. 보수동에는 헌책방 골목이 생겨나 학생과 지식인이 책을 사고팔았다.
+피란은 예술과 문학도 부산으로 데려왔다. 화가 이중섭은 원산에서 피란해 영도에 머물며 담뱃갑 은지에 그림을 새겼고, 김환기를 비롯한 화가들도 부산에서 붓을 들었다. 광복동의 밀다원다방에는 김동리 같은 문인들이 모여 시대를 이야기했고, 그 풍경은 훗날 소설의 배경이 되었다. 음악가 윤이상도 부산에서 활동했다.
+임시수도 부산에서는 정치도 요동쳤다. 대통령 직선제 개헌을 둘러싼 부산정치파동이 벌어졌고, 결국 발췌개헌으로 이어졌다. 1953년 국제시장과 부산역 앞에서는 큰불이 잇따라 도시를 태웠다. 정전협정이 체결되고 정부가 서울로 환도하면서 임시수도의 시간은 끝났지만, 피란과 부산이 함께 겪은 기억은 지금도 원도심 골목과 산복도로에 남아 있다.`;
+
+/* ===== 팔레트 ===== */
+const TYPE_COLOR = {도시:"#2f4858",섬:"#3a7d6e",시장:"#c9752b",항구:"#2f6f8f",
+  거리:"#7d6b46",다방:"#a0522d",관청:"#5b4a8a",관저:"#8c3b2e",장소:"#6b6157",마을:"#b08442"};
+const CLASS_COLOR = {Person:"#8c3b2e",Group:"#c9752b",Place:"#2f4858",Event:"#5b4a8a",Work:"#3a7d6e"};
+
+/* ===== 미디어(이미지)·위키 링크 — 자동 생성 ===== */
+const MEDIA = {
+ "부산": {
+  "img": "assets/place_부산.jpg",
+  "license": "CC BY 2.0",
+  "credit": "UNC - CFC - USFK · CC BY 2.0 · Wikimedia Commons",
+  "source": "https://commons.wikimedia.org/wiki/File%3AAn_aerial_view_of_Pier_8%2C_Port_of_Pusan%2C_1998.jpg"
+ },
+ "영도": {
+  "img": "assets/place_영도.jpg",
+  "license": "CC BY 2.0",
+  "credit": "*intacto · CC BY 2.0 · Wikimedia Commons",
+  "source": "https://commons.wikimedia.org/wiki/File%3AKorea-Busan-Taejongdae-07.jpg"
+ },
+ "국제시장": {
+  "img": "assets/place_국제시장.jpg",
+  "license": "CC0",
+  "credit": "Hankook12 · CC0 · Wikimedia Commons",
+  "source": "https://commons.wikimedia.org/wiki/File%3AGukje_Market_Busan_South_Korea_01.jpg"
+ },
+ "40계단": {
+  "img": "assets/place_40계단.svg",
+  "license": "도식",
+  "credit": "도식(자체 제작 · 대표 이미지 없음)",
+  "source": ""
+ },
+ "부산항": {
+  "img": "assets/place_부산항.jpg",
+  "license": "CC BY-SA 4.0",
+  "credit": "Busan Metropolitan city · CC BY-SA 4.0 · Wikimedia Commons",
+  "source": "https://commons.wikimedia.org/wiki/File%3ABusan_Port_%281%29.jpg"
+ },
+ "자갈치시장": {
+  "img": "assets/place_자갈치시장.jpg",
+  "license": "CC0",
+  "credit": "Bernard Gagnon · CC0 · Wikimedia Commons",
+  "source": "https://commons.wikimedia.org/wiki/File%3AJagalchi_Market_01.jpg"
+ },
+ "광복동": {
+  "img": "assets/place_광복동.jpg",
+  "license": "CC BY 2.0",
+  "credit": "Ryan Bodenstein · CC BY 2.0 · Wikimedia Commons",
+  "source": "https://commons.wikimedia.org/wiki/File%3AGwangbok-dong_Street_in_Busan_2.png"
+ },
+ "밀다원다방": {
+  "img": "assets/place_밀다원다방.svg",
+  "license": "도식",
+  "credit": "도식(자체 제작 · 대표 이미지 없음)",
+  "source": ""
+ },
+ "임시수도정부청사": {
+  "img": "assets/place_임시수도정부청사.jpg",
+  "license": "CC BY 4.0",
+  "credit": "S h y numis · CC BY 4.0 · Wikimedia Commons",
+  "source": "https://commons.wikimedia.org/wiki/File%3ASeokdang_Museum_or_Former_Provisional_Capital_Government_Building_at_Dong-a_University_in_Busan.jpg"
+ },
+ "임시수도대통령관저": {
+  "img": "assets/place_임시수도대통령관저.jpg",
+  "license": "CC BY-SA 4.0",
+  "credit": "Steve46814 · CC BY-SA 4.0 · Wikimedia Commons",
+  "source": "https://commons.wikimedia.org/wiki/File%3AProvisional_Capital_Memorial_Hall_11-10516.jpg"
+ },
+ "보수동책방골목": {
+  "img": "assets/place_보수동책방골목.jpg",
+  "license": "CC BY-SA 4.0",
+  "credit": "Mobius6 · CC BY-SA 4.0 · Wikimedia Commons",
+  "source": "https://commons.wikimedia.org/wiki/File%3ABosu-dong_Bookstore_Alley_20200523_002.jpg"
+ },
+ "우암동소막마을": {
+  "img": "assets/place_우암동소막마을.svg",
+  "license": "도식",
+  "credit": "도식(자체 제작 · 대표 이미지 없음)",
+  "source": ""
+ },
+ "아미동비석마을": {
+  "img": "assets/place_아미동비석마을.svg",
+  "license": "도식",
+  "credit": "도식(자체 제작 · 대표 이미지 없음)",
+  "source": ""
+ },
+ "감천문화마을": {
+  "img": "assets/place_감천문화마을.jpg",
+  "license": "CC0",
+  "credit": "Bernard Gagnon · CC0 · Wikimedia Commons",
+  "source": "https://commons.wikimedia.org/wiki/File%3AGamcheon_Culture_Village.jpg"
+ },
+ "원산": {
+  "img": "assets/place_원산.jpg",
+  "license": "Public domain",
+  "credit": "USAF (photo 306-PS-51(10303)) · Public domain · Wikimedia Commons",
+  "source": "https://commons.wikimedia.org/wiki/File%3AKorean_War_bombing_Wonsan.jpg"
+ },
+ "1·4 후퇴": {
+  "img": "assets/event_1_4후퇴.jpg",
+  "license": "Public domain",
+  "credit": "Max Desfor · Public domain · Wikimedia Commons",
+  "source": "https://commons.wikimedia.org/wiki/File%3AMax_Desfor_-_Flight_of_Refugees_Across_Wrecked_Bridge_in_Korea.jpg"
+ },
+ "정전협정 체결": {
+  "img": "assets/event_정전협정.jpg",
+  "license": "Public domain",
+  "credit": "U.S. Department of Defense (F. Kazukaitis. U.S. Navy) · Public domain · Wikimedia Commons",
+  "source": "https://commons.wikimedia.org/wiki/File%3AKorean_War_armistice_agreement_1953.jpg"
+ },
+ "정부 임시수도 부산 이전": {
+  "img": "assets/event_정부임시수도부산이전.jpg",
+  "license": "Public domain",
+  "credit": "US Army · Public domain · Wikimedia Commons",
+  "source": "https://commons.wikimedia.org/wiki/File%3APusan_rail.jpg"
+ },
+ "정부임시수도부산이전": {
+  "img": "assets/event_정부임시수도부산이전.jpg",
+  "license": "Public domain",
+  "credit": "US Army · Public domain · Wikimedia Commons",
+  "source": "https://commons.wikimedia.org/wiki/File%3APusan_rail.jpg"
+ },
+ "부산정치파동": {
+  "img": "assets/event_부산정치파동.jpg",
+  "license": "Public domain",
+  "credit": "Unknown · Public domain · Wikimedia Commons",
+  "source": "https://commons.wikimedia.org/wiki/File%3ASyngman_Rhee.jpg"
+ },
+ "발췌개헌": {
+  "img": "assets/event_발췌개헌.svg",
+  "license": "도식",
+  "credit": "도식(자체 제작 · 대표 이미지 없음)",
+  "source": ""
+ },
+ "국제시장 대화재": {
+  "img": "assets/event_국제시장대화재.jpg",
+  "license": "CC0",
+  "credit": "Hankook12 · CC0 · Wikimedia Commons",
+  "source": "https://commons.wikimedia.org/wiki/File%3AGukje_Market_Busan_South_Korea_01.jpg"
+ },
+ "국제시장대화재": {
+  "img": "assets/event_국제시장대화재.jpg",
+  "license": "CC0",
+  "credit": "Hankook12 · CC0 · Wikimedia Commons",
+  "source": "https://commons.wikimedia.org/wiki/File%3AGukje_Market_Busan_South_Korea_01.jpg"
+ },
+ "정부 서울 환도": {
+  "img": "assets/event_정부서울환도.jpg",
+  "license": "CC BY 4.0",
+  "credit": "한국저작권위원회 · CC BY 4.0 · Wikimedia Commons",
+  "source": "https://commons.wikimedia.org/wiki/File%3A1953%EB%85%84_%EC%84%9C%EC%9A%B8%EC%9D%98_%EC%98%81%ED%99%94%EB%8B%B9_%EA%BD%83%EC%A7%91.jpg"
+ },
+ "부산역전 대화재": {
+  "img": "assets/event_부산역전대화재.svg",
+  "license": "도식",
+  "credit": "도식(자체 제작 · 대표 이미지 없음)",
+  "source": ""
+ },
+ "부산역전대화재": {
+  "img": "assets/event_부산역전대화재.svg",
+  "license": "도식",
+  "credit": "도식(자체 제작 · 대표 이미지 없음)",
+  "source": ""
+ },
+ "이승만": {
+  "img": "assets/person_이승만.jpg",
+  "license": "Public domain",
+  "credit": "National Photo Company · Public domain · Wikimedia Commons",
+  "source": "https://commons.wikimedia.org/wiki/File%3ASyngman_Rhee_in_1931.JPG"
+ },
+ "이중섭": {
+  "img": "assets/person_이중섭.svg",
+  "license": "도식",
+  "credit": "도식(자체 제작 · 대표 이미지 없음)",
+  "source": ""
+ },
+ "김환기": {
+  "img": "assets/person_김환기.jpg",
+  "license": "CC0",
+  "credit": "PaigePhault · CC0 · Wikimedia Commons",
+  "source": "https://commons.wikimedia.org/wiki/File%3AWhanki_Museum.jpg"
+ },
+ "윤이상": {
+  "img": "assets/person_윤이상.jpg",
+  "license": "Public domain",
+  "credit": "김언호 · Public domain · Wikimedia Commons",
+  "source": "https://commons.wikimedia.org/wiki/File%3APaik_Nam_June_and_Isang_Yun.jpg"
+ },
+ "김동리": {
+  "img": "assets/person_김동리.jpg",
+  "license": "Public domain",
+  "credit": "경향신문 · Public domain · Wikimedia Commons",
+  "source": "https://commons.wikimedia.org/wiki/File%3A%EA%B9%80%EB%8F%99%EB%A6%AC_%EC%9E%91%EA%B0%80.jpg"
+ },
+ "대한민국정부": {
+  "img": "assets/group_대한민국정부.svg",
+  "license": "도식",
+  "credit": "도식(자체 제작 · 대표 이미지 없음)",
+  "source": ""
+ },
+ "피란민": {
+  "img": "assets/group_피란민.svg",
+  "license": "도식",
+  "credit": "도식(자체 제작 · 대표 이미지 없음)",
+  "source": ""
+ },
+ "헌책방": {
+  "img": "assets/group_헌책방.svg",
+  "license": "도식",
+  "credit": "도식(자체 제작 · 대표 이미지 없음)",
+  "source": ""
+ },
+ "은지화": {
+  "img": "assets/work_은지화.svg",
+  "license": "도식",
+  "credit": "도식(자체 제작 · 대표 이미지 없음)",
+  "source": ""
+ },
+ "밀다원시대": {
+  "img": "assets/work_밀다원시대.svg",
+  "license": "도식",
+  "credit": "도식(자체 제작 · 대표 이미지 없음)",
+  "source": ""
+ }
+};
+
+const WIKI = {
+ "정부 임시수도 부산 이전": "https://ko.wikipedia.org/wiki/%EC%9E%84%EC%8B%9C%EC%88%98%EB%8F%84",
+ "1·4 후퇴": "https://ko.wikipedia.org/wiki/1%C2%B74_%ED%9B%84%ED%87%B4",
+ "부산정치파동": "https://ko.wikipedia.org/wiki/%EB%B6%80%EC%82%B0%EC%A0%95%EC%B9%98%ED%8C%8C%EB%8F%99",
+ "발췌개헌": "https://ko.wikipedia.org/wiki/%EB%B0%9C%EC%B7%8C_%EA%B0%9C%ED%97%8C",
+ "국제시장 대화재": "https://ko.wikipedia.org/wiki/%EA%B5%AD%EC%A0%9C%EC%8B%9C%EC%9E%A5",
+ "정부 서울 환도": "https://ko.wikipedia.org/wiki/%ED%95%9C%EA%B5%AD_%EC%A0%84%EC%9F%81",
+ "부산역전 대화재": "https://ko.wikipedia.org/wiki/%EB%B6%80%EC%82%B0%EC%97%AD",
+ "부산": "https://ko.wikipedia.org/wiki/%EB%B6%80%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C",
+ "영도": "https://ko.wikipedia.org/wiki/%EC%98%81%EB%8F%84%EA%B5%AC",
+ "국제시장": "https://ko.wikipedia.org/wiki/%EA%B5%AD%EC%A0%9C%EC%8B%9C%EC%9E%A5",
+ "40계단": "https://ko.wikipedia.org/wiki/40%EA%B3%84%EB%8B%A8",
+ "부산항": "https://ko.wikipedia.org/wiki/%EB%B6%80%EC%82%B0%ED%95%AD",
+ "자갈치시장": "https://ko.wikipedia.org/wiki/%EC%9E%90%EA%B0%88%EC%B9%98%EC%8B%9C%EC%9E%A5",
+ "광복동": "https://ko.wikipedia.org/wiki/%EA%B4%91%EB%B3%B5%EB%8F%99",
+ "임시수도정부청사": "https://ko.wikipedia.org/wiki/%EB%8F%99%EC%95%84%EB%8C%80%ED%95%99%EA%B5%90_%EC%84%9D%EB%8B%B9%EB%B0%95%EB%AC%BC%EA%B4%80",
+ "임시수도대통령관저": "https://ko.wikipedia.org/wiki/%EC%9E%84%EC%8B%9C%EC%88%98%EB%8F%84%EA%B8%B0%EB%85%90%EA%B4%80",
+ "보수동책방골목": "https://ko.wikipedia.org/wiki/%EB%B3%B4%EC%88%98%EB%8F%99_%EC%B1%85%EB%B0%A9%EA%B3%A8%EB%AA%A9",
+ "우암동소막마을": "https://ko.wikipedia.org/wiki/%EC%9A%B0%EC%95%94%EB%8F%99",
+ "아미동비석마을": "https://ko.wikipedia.org/wiki/%EC%95%84%EB%AF%B8%EB%8F%99",
+ "감천문화마을": "https://ko.wikipedia.org/wiki/%EA%B0%90%EC%B2%9C%EB%AC%B8%ED%99%94%EB%A7%88%EC%9D%84",
+ "원산": "https://ko.wikipedia.org/wiki/%EC%9B%90%EC%82%B0%EC%8B%9C",
+ "이중섭": "https://ko.wikipedia.org/wiki/%EC%9D%B4%EC%A4%91%EC%84%AD",
+ "김환기": "https://ko.wikipedia.org/wiki/%EA%B9%80%ED%99%98%EA%B8%B0",
+ "윤이상": "https://ko.wikipedia.org/wiki/%EC%9C%A4%EC%9D%B4%EC%83%81",
+ "김동리": "https://ko.wikipedia.org/wiki/%EA%B9%80%EB%8F%99%EB%A6%AC",
+ "이승만": "https://ko.wikipedia.org/wiki/%EC%9D%B4%EC%8A%B9%EB%A7%8C",
+ "은지화": "https://ko.wikipedia.org/wiki/%EC%9D%B4%EC%A4%91%EC%84%AD",
+ "대한민국정부": "https://ko.wikipedia.org/wiki/%EB%8C%80%ED%95%9C%EB%AF%BC%EA%B5%AD_%EC%A0%95%EB%B6%80",
+ "피란민": "https://ko.wikipedia.org/wiki/%ED%94%BC%EB%82%9C%EB%AF%BC",
+ "헌책방": "https://ko.wikipedia.org/wiki/%ED%97%8C%EC%B1%85%EB%B0%A9",
+ "정전협정 체결": "https://en.wikipedia.org/wiki/Korean_Armistice_Agreement",
+ "밀다원시대": "https://ko.wikipedia.org/wiki/%EA%B9%80%EB%8F%99%EB%A6%AC"
+};
+
+function mediaOf(name){ return MEDIA[name] || null; }
+function wikiOf(name){ return WIKI[name] || null; }
+
+/* ===== ① 지도 (Leaflet) ===== */
+const map = L.map("map-view",{scrollWheelZoom:false}).setView([35.098,129.030],13);
+L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+  {attribution:"© OpenStreetMap © CARTO",maxZoom:19}).addTo(map);
+const bounds=[], layersByType={};
+const mapInfo=document.getElementById("map-info");
+function showPlaceInfo(p){
+  const m=mediaOf(p.name), c=TYPE_COLOR[p.type]||"#6b6157", w=wikiOf(p.name);
+  const img = m ? `<img class="ip-thumb" src="${m.img}" alt="${p.name}">` : "";
+  const credit = m && m.credit ? `<div class="ip-credit">이미지: ${m.credit}</div>` : "";
+  const link = w ? `<a class="ip-link" href="${w}" target="_blank" rel="noopener">위키백과에서 보기 ↗</a>` : "";
+  mapInfo.innerHTML = img +
+    `<div class="ip-body"><div class="ip-title">${p.name}</div>`+
+    `<span class="ip-chip" style="background:${c}">${p.type}</span>`+
+    `<p class="ip-desc">${p.desc}</p>${link}${credit}</div>`;
+  mapInfo.scrollTop=0;
+}
+PLACES.forEach(p=>{
+  if(p.name==="원산") return;              // 북한 소재 — 부산 지도에서 제외
+  const c=TYPE_COLOR[p.type]||"#6b6157";
+  const m=L.circleMarker([p.lat,p.lng],{radius:9,color:"#fff",weight:2,fillColor:c,fillOpacity:.92})
+    .bindTooltip(p.name,{direction:"top"})
+    .on("click",()=>showPlaceInfo(p));
+  (layersByType[p.type] ||= L.layerGroup().addTo(map)).addLayer(m);
+  bounds.push([p.lat,p.lng]);
+});
+map.fitBounds(bounds,{padding:[40,40]});
+
+// 범례 — 클릭하면 해당 유형 마커 토글
+const mapLegend=document.getElementById("map-legend");
+mapLegend.innerHTML = Object.entries(TYPE_COLOR)
+  .map(([t,c])=>`<span class="legend-item" data-type="${t}" title="클릭해 ${t} 켜기/끄기"><i class="dot" style="background:${c}"></i>${t}</span>`).join("");
+mapLegend.querySelectorAll(".legend-item").forEach(el=>{
+  el.addEventListener("click",()=>{
+    const grp=layersByType[el.dataset.type];
+    if(!grp) return;
+    const off=el.classList.toggle("off");
+    if(off) map.removeLayer(grp); else grp.addTo(map);
+  });
+});
+
+// 전체 화면
+const mapWrap=document.getElementById("map-wrap");
+document.getElementById("map-fs").addEventListener("click",()=>{
+  if(document.fullscreenElement) document.exitFullscreen();
+  else mapWrap.requestFullscreen && mapWrap.requestFullscreen();
+});
+document.addEventListener("fullscreenchange",()=>setTimeout(()=>map.invalidateSize(),120));
+
+/* ===== ② 타임라인 (vis-timeline) ===== */
+const tlItems = new vis.DataSet(EVENTS.map(e=>({
+  id:e.id, content:e.title, start:e.date, title:`${e.date} · ${e.desc}`
+})));
+const timeline = new vis.Timeline(document.getElementById("timeline-view"), tlItems, {
+  min:"1950-06-01", max:"1954-03-01", margin:{item:12}, stack:true, zoomable:true
+});
+const tlDetail=document.getElementById("tl-detail");
+function showEventInfo(e){
+  const m=mediaOf(e.title), w=wikiOf(e.title);
+  const img = m ? `<img src="${m.img}" alt="${e.title}">` : "";
+  const credit = m && m.credit ? `<div class="credit">이미지: ${m.credit}</div>` : "";
+  const link = w ? `<a class="ip-link" href="${w}" target="_blank" rel="noopener">대표 사이트(위키백과) ↗</a>` : "";
+  tlDetail.className="tl-detail";
+  tlDetail.innerHTML = img +
+    `<div class="body"><div class="date">${e.date}</div><div class="ttl">${e.title}</div>`+
+    `<p>${e.desc}</p>${link}${credit}</div>`;
+}
+timeline.on("select",p=>{
+  const e=EVENTS.find(x=>x.id===p.items[0]);
+  if(e) showEventInfo(e);
+});
+
+/* ===== ③ 관계망 (vis-network) ===== */
+const CLASS_OF = {
+  이중섭:"Person",김환기:"Person",윤이상:"Person",김동리:"Person",이승만:"Person",
+  대한민국정부:"Group",피란민:"Group",헌책방:"Group",
+  은지화:"Work",밀다원시대:"Work",
+  정부임시수도부산이전:"Event",국제시장대화재:"Event",부산역전대화재:"Event",
+  부산정치파동:"Event",발췌개헌:"Event"
+};
+const classOf = n => CLASS_OF[n] || "Place";
+const nodeMap = new Map();
+TRIPLES.forEach(([s,,o])=>{ [s,o].forEach(n=>{ if(!nodeMap.has(n)) nodeMap.set(n,classOf(n)); }); });
+const deg = {}; TRIPLES.forEach(([s,,o])=>{deg[s]=(deg[s]||0)+1;deg[o]=(deg[o]||0)+1;});
+function nodeObj(n,cls,mode){
+  const base={id:n,label:n,group:cls,value:deg[n]||1,
+    color:{background:CLASS_COLOR[cls],border:CLASS_COLOR[cls],highlight:{background:CLASS_COLOR[cls],border:"#2b2622"}},
+    font:{color:"#2b2622",size:14,face:"Noto Sans KR"},borderWidth:3};
+  const m=mediaOf(n);
+  if(mode==="image" && m){ base.shape="circularImage"; base.image=m.img; base.borderWidth=4; }
+  else { base.shape="dot"; base.color.background=CLASS_COLOR[cls]; }
+  return base;
+}
+let netMode="image";
+const netNodes = new vis.DataSet([...nodeMap].map(([n,cls])=>nodeObj(n,cls,netMode)));
+const netEdges = new vis.DataSet(TRIPLES.map(([s,p,o],i)=>({
+  id:i, from:s, to:o, label:p.replace(/\(.*\)/,""),
+  arrows:"to", color:{color:"#c3b8a5",highlight:"#8c3b2e"},
+  font:{size:10,color:"#8a7f72",strokeWidth:3,strokeColor:"#fbfaf7"}
+})));
+const network = new vis.Network(document.getElementById("network-view"),
+  {nodes:netNodes,edges:netEdges},{
+  nodes:{shape:"dot",scaling:{min:16,max:40}},
+  edges:{smooth:{type:"continuous"}},
+  physics:{enabled:true, solver:"barnesHut",
+    barnesHut:{gravitationalConstant:-4200,centralGravity:0.32,springLength:120,springConstant:0.045,damping:0.4,avoidOverlap:0.15},
+    stabilization:{iterations:180}, minVelocity:0.2},
+  interaction:{hover:true,tooltipDelay:150,navigationButtons:false}
+});
+// 살아있는 듯한 지속적 미세 움직임 — 중력·용수철 길이를 천천히 진동
+let netPhase=0;
+const netHeartbeat=setInterval(()=>{
+  netPhase+=0.05;
+  network.setOptions({physics:{barnesHut:{
+    centralGravity:0.30+0.09*Math.sin(netPhase),
+    springLength:120+16*Math.sin(netPhase*0.6)
+  }}});
+},220);
+
+// 뷰 전환 (사진 노드 / 점 노드)
+document.querySelectorAll("#net-mode button").forEach(b=>{
+  b.addEventListener("click",()=>{
+    document.querySelectorAll("#net-mode button").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on"); netMode=b.dataset.mode;
+    netNodes.update([...nodeMap].map(([n,cls])=>nodeObj(n,cls,netMode)));
+  });
+});
+
+// 클래스 범례 — 클릭 필터
+const netHidden=new Set();
+const netLegend=document.getElementById("net-legend");
+netLegend.innerHTML = Object.entries(CLASS_COLOR)
+  .map(([c,col])=>`<span class="legend-item" data-cls="${c}" title="클릭해 ${c} 켜기/끄기"><i class="dot" style="background:${col}"></i>${c}</span>`).join("");
+netLegend.querySelectorAll(".legend-item").forEach(el=>{
+  el.addEventListener("click",()=>{
+    const cls=el.dataset.cls, off=el.classList.toggle("off");
+    if(off) netHidden.add(cls); else netHidden.delete(cls);
+    netNodes.update([...nodeMap].filter(([n,c])=>c===cls).map(([n,c])=>({id:n,hidden:off})));
+  });
+});
+
+/* ===== ④ 언어 — 워드클라우드 / 막대 / 히트맵 ===== */
+const STOP = new Set(("이 그 저 것 수 등 및 더 못 안 잘 또 좀 왜 곧 늘 뿐 채 때 데 중 앞 위 속 밖 " +
+  "되었다 되어 되고 있었다 있는 있고 하는 하고 했다 하며 되며 이었다 였다 같은 같이 따라 " +
+  "에서 으로 에게 한테 부터 까지 처럼 만큼 대한 위한 통해 대해 " +
+  "그리고 그러나 하지만 결국 순식간 서로 다시 함께 모두 훨씬 아주 매우 가장").split(/\s+/));
+const JOSA = ["으로부터","에서는","에게서","에서도","으로써","으로는","이라는","라는","에서","으로","에게","한테","부터","까지","처럼","만큼","이라","라고","에는","에도","이나","이며","와의","과의","로는","은","는","이","가","을","를","에","와","과","도","의","만","로","야","은는"];
+function stripJosa(w){ for(const j of JOSA){ if(w.length>j.length+1 && w.endsWith(j)) return w.slice(0,-j.length);} return w; }
+const freq={};
+TEXT.replace(/[^가-힣0-9·]/g," ").split(/\s+/).forEach(tok=>{
+  if(!tok) return; let w=stripJosa(tok);
+  if(w.length<2 || STOP.has(w) || STOP.has(tok)) return;
+  freq[w]=(freq[w]||0)+1;
+});
+const list=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,80);
+const maxF=list[0][1];
+const PAL=["#8c3b2e","#2f4858","#c9752b","#5b4a8a","#3a7d6e","#b08442","#7d6b46"];
+const tip=document.getElementById("wc-tooltip"), stage=document.getElementById("wc-stage");
+function drawCloud(){
+  const cv=document.getElementById("wordcloud");
+  if(cv.offsetWidth===0) return;
+  cv.width=cv.offsetWidth*2; cv.height=460*2; cv.style.height="460px";
+  WordCloud(cv,{
+    list, gridSize:Math.round(16*cv.width/1400),
+    weightFactor:s=> (10+ s/maxF*72) * (cv.width/1400),
+    fontFamily:"Noto Sans KR, Apple SD Gothic Neo, sans-serif",
+    color:(w,wt)=>PAL[(w.length+wt)%PAL.length],
+    backgroundColor:"#fff", rotateRatio:.28, rotationSteps:2,
+    minSize:8, drawOutOfBound:false, shrinkToFit:true,
+    hover:(item,dim,evt)=>{
+      if(item){ const r=stage.getBoundingClientRect();
+        tip.textContent=`${item[0]} · ${item[1]}회`;
+        tip.style.left=(evt.clientX-r.left+12)+"px"; tip.style.top=(evt.clientY-r.top+12)+"px";
+        tip.style.opacity=1;
+      } else tip.style.opacity=0;
+    }
+  });
+}
+function buildBar(){
+  const top=list.slice(0,20), mx=top[0][1];
+  document.getElementById("wc-bar").innerHTML = top.map(([w,n],i)=>
+    `<div class="bar-row"><div class="lab">${w}</div>`+
+    `<div class="track"><div class="fill" style="width:${(n/mx*100).toFixed(1)}%;background:${PAL[i%PAL.length]}"></div></div>`+
+    `<div class="num">${n}</div></div>`).join("");
+}
+function buildHeat(){
+  const top=list.slice(0,48), mx=top[0][1], mn=top[top.length-1][1];
+  document.getElementById("wc-heat").innerHTML = top.map(([w,n])=>{
+    const t=(n-mn)/Math.max(1,(mx-mn));           // 0~1
+    const bg=`hsl(${18+ (1-t)*30}, ${45+t*45}%, ${68-t*40}%)`;   // 빈도↑ → 진한 벽돌색
+    return `<div class="heat-cell" style="background:${bg}" title="${w}: ${n}회"><span class="hw">${w}</span><span class="hn">${n}회</span></div>`;
+  }).join("");
+}
+let cloudDrawn=false;
+function setWcMode(mode){
+  document.querySelectorAll("#wc-mode button").forEach(x=>x.classList.toggle("on",x.dataset.mode===mode));
+  document.getElementById("wordcloud").style.display = mode==="cloud"?"block":"none";
+  document.getElementById("wc-bar").style.display = mode==="bar"?"block":"none";
+  document.getElementById("wc-heat").style.display = mode==="heat"?"grid":"none";
+  if(mode==="cloud"){ if(!cloudDrawn){drawCloud();cloudDrawn=true;} }
+  else tip.style.opacity=0;
+}
+document.querySelectorAll("#wc-mode button").forEach(b=>
+  b.addEventListener("click",()=>setWcMode(b.dataset.mode)));
+buildBar(); buildHeat(); drawCloud(); cloudDrawn=true;
+let rt; window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(()=>{
+  if(document.getElementById("wordcloud").style.display!=="none"){drawCloud();}
+},250);});
+</script>
+</body>
+</html>
