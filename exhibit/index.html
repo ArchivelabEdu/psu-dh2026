@@ -151,6 +151,45 @@
   .net-caption a{margin-left:auto;font-size:13px;font-weight:700;text-decoration:none;color:var(--accent);
     border:1px solid var(--accent);border-radius:8px;padding:5px 11px}
   .net-caption a:hover{background:var(--accent);color:#fff}
+  /* 질의 */
+  .q-wrap{display:flex;gap:16px;align-items:flex-start}
+  .q-list{list-style:none;margin:0;padding:0;flex:0 0 264px;display:flex;flex-direction:column;gap:7px}
+  .q-list li{border:1px solid var(--line);border-radius:10px;padding:11px 13px;cursor:pointer;
+    background:#fff;transition:border-color .15s,background .15s}
+  .q-list li:hover{background:#f6f4f0}
+  .q-list li.on{border-color:var(--point);background:#fbf1ee}
+  .q-list .qt{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--point)}
+  .q-list .qq{font-size:13.5px;font-weight:600;color:#3a332d;margin-top:2px;line-height:1.45}
+  .q-result{flex:1 1 auto;min-width:0;border:1px solid var(--line);border-radius:12px;background:#fff;padding:18px 20px}
+  .q-hint{color:var(--muted);font-size:14px;text-align:center;padding:40px 0}
+  .q-nl{font-family:var(--serif);font-size:19px;font-weight:800;letter-spacing:-.01em;margin-bottom:4px}
+  .q-param{margin:8px 0 4px;font-size:13px;color:var(--muted)}
+  .q-param select{font:inherit;font-size:13px;padding:4px 8px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink)}
+  .q-sec-label{font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--muted);margin:16px 0 6px;text-transform:uppercase}
+  pre.q-sparql{margin:0;background:#f6f5f3;border:1px solid var(--line);border-radius:8px;padding:12px 14px;
+    font-family:"SFMono-Regular",Menlo,Consolas,monospace;font-size:12.5px;line-height:1.55;color:#3a332d;overflow-x:auto;white-space:pre}
+  .q-answer{font-size:15px;color:#2b2622;line-height:1.7;background:#fbf1ee;border-left:3px solid var(--point);
+    border-radius:0 8px 8px 0;padding:12px 14px}
+  .q-answer.empty{background:#f4f2ee;border-left-color:var(--muted)}
+  .q-answer .none{font-weight:800;color:var(--accent)}
+  .q-answer .known{margin-top:7px;font-size:13.5px;color:var(--muted)}
+  .q-prov{display:flex;flex-wrap:wrap;gap:7px}
+  .tri{display:inline-flex;align-items:center;gap:5px;font-size:12px;border:1px solid var(--line);
+    border-radius:20px;padding:3px 10px;background:#fbfaf8}
+  .tri b{color:var(--accent2)} .tri .pr{color:var(--point);font-weight:700}
+  .q-graphbtn{margin-top:12px;border:1px solid var(--accent2);background:#fff;color:var(--accent2);font:inherit;
+    font-size:13px;font-weight:700;padding:6px 12px;border-radius:8px;cursor:pointer}
+  .q-graphbtn:hover{background:var(--accent2);color:#fff}
+  .contrast{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+  .contrast .col{border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .contrast .c-ai{background:#f7f6f4}
+  .contrast .c-onto{background:#fbf1ee;border-left:3px solid var(--point)}
+  .contrast h5{margin:0 0 6px;font-size:12px;font-weight:800;letter-spacing:.04em}
+  .contrast .c-ai h5{color:var(--muted)} .contrast .c-onto h5{color:var(--point)}
+  .contrast p{margin:0;font-size:13px;color:#463f38;line-height:1.65}
+  .contrast .gap{margin-top:8px;font-size:12px;color:#8a5a3c;background:#fbf3ec;border-radius:6px;padding:6px 8px}
+  .contrast .warrant{margin-top:8px;font-size:12px;color:#3a332d;background:#f2ede9;border-radius:6px;padding:6px 8px}
+  .q-engine{font-size:11px;color:#9a8f80;margin-top:14px}
   /* 언어 */
   .wc-stage{position:relative;border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden}
   #wordcloud{height:460px;width:100%;display:block}
@@ -194,6 +233,7 @@
     .info-panel{flex:auto;width:auto}
     .about-grid{grid-template-columns:1fr}
     .tl-detail{flex-direction:column}.tl-detail img{width:100%;height:170px}
+    .q-wrap{flex-direction:column}.q-list{flex:auto}.contrast{grid-template-columns:1fr}
   }
 </style>
 </head>
@@ -226,6 +266,7 @@
     <a href="#map">지도</a>
     <a href="#timeline">연표</a>
     <a href="#network">관계망</a>
+    <a href="#query">질의</a>
     <a href="#words">언어</a>
     <a href="#about">해설</a>
   </div>
@@ -293,6 +334,19 @@
     <div class="viz">
       <div id="network-view"></div>
       <div class="net-caption empty" id="net-caption">노드를 클릭하면 이름과 분류가 여기에 표시됩니다.</div>
+    </div>
+  </section>
+
+  <section id="query">
+    <div class="sec-head">
+      <div class="tag">QUERY · SPARQL · AI</div>
+      <h2>온톨로지에게 묻다</h2>
+      <p class="sub">질문을 고르면 <b>실제 SPARQL</b>이 그래프에 실행되어 근거 트리플과 함께 답합니다. 같은 질문에 대한 ‘원문만 읽은 AI 자유 해석’과 나란히 비교해 보세요.</p>
+      <div class="lead">트리플로 정리된 데이터는 <b>빠짐없이</b>(전수), <b>여러 단계를 따라</b>(경로), <b>근거를 밝히며</b> 답하고, 모르면 지어내지 않고 <b>‘없음’</b>이라 답합니다 — AI가 원문을 그냥 해석하는 것과의 결정적 차이입니다.</div>
+    </div>
+    <div class="viz q-wrap">
+      <ul class="q-list" id="q-list"></ul>
+      <div class="q-result" id="q-result"><div class="q-hint">왼쪽에서 질문을 선택하세요.</div></div>
     </div>
   </section>
 
@@ -964,6 +1018,198 @@ buildBar(); buildHeat(); drawCloud(); cloudDrawn=true;
 let rt; window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(()=>{
   if(document.getElementById("wordcloud").style.display!=="none"){drawCloud();}
 },250);});
+
+/* ===== ⑤ 질의 — 온톨로지에게 묻다 (실제 SPARQL 실행) ===== */
+const qNS="https://archivelab.co.kr/ns/busan-refuge#";
+const Q_RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+const Q_RDFS="http://www.w3.org/2000/01/rdf-schema#";
+const Q_XSD="http://www.w3.org/2001/XMLSchema#";
+const PFX=`PREFIX ex: <${qNS}>\nPREFIX rdf: <${Q_RDF}>\nPREFIX rdfs: <${Q_RDFS}>`;
+const nospace=t=>t.replace(/\s/g,"");
+const qiri=n=>`<${qNS}${n}>`;
+// 표시용 라벨(사건은 공백 포함 원제), 술어 한글
+const Q_LABEL={}; EVENTS.forEach(e=>{ Q_LABEL[nospace(e.title)]=e.title; });
+const PRED_KO={}; TRIPLES.forEach(([,p])=>{ const m=p.match(/^([A-Za-z]+)\((.+)\)$/); if(m) PRED_KO[m[1]]=m[2]; });
+const qDisp=v=>{ const n=(v.split("#").pop()); return Q_LABEL[n]||n; };
+const predKo=p=>{ const n=p.split("#").pop(); return PRED_KO[n]||n; };
+// 인물/장소 목록(파라메트릭)
+const Q_PERSONS=[...new Set(TRIPLES.flatMap(([s,,o])=>[s,o]))].filter(n=>classOf(n)==="Person");
+const Q_PLACES=PLACES.map(p=>p.name).filter(n=>n!=="원산");
+
+// --- RDF(N-Triples) 빌더 ---
+function buildNTriples(){
+  const L=[], seen=new Set();
+  const ent=n=>{ if(seen.has(n))return; seen.add(n);
+    L.push(`${qiri(n)} <${Q_RDF}type> ${qiri(classOf(n))} .`);
+    L.push(`${qiri(n)} <${Q_RDFS}label> ${JSON.stringify(Q_LABEL[n]||n)}@ko .`); };
+  TRIPLES.forEach(([s,p,o])=>{ ent(s); ent(o);
+    L.push(`${qiri(s)} ${qiri(p.replace(/\(.*\)/,""))} ${qiri(o)} .`); });
+  PLACES.forEach(p=>{ ent(p.name);
+    L.push(`${qiri(p.name)} ${qiri("placeType")} ${JSON.stringify(p.type)} .`);
+    L.push(`${qiri(p.name)} ${qiri("lat")} "${p.lat}"^^<${Q_XSD}decimal> .`);
+    L.push(`${qiri(p.name)} ${qiri("lng")} "${p.lng}"^^<${Q_XSD}decimal> .`); });
+  EVENTS.forEach(e=>{ const id=nospace(e.title);
+    L.push(`${qiri(id)} <${Q_RDF}type> ${qiri("Event")} .`);
+    L.push(`${qiri(id)} <${Q_RDFS}label> ${JSON.stringify(e.title)}@ko .`);
+    L.push(`${qiri(id)} ${qiri("date")} "${e.date}"^^<${Q_XSD}date> .`);
+    L.push(`${qiri(id)} ${qiri("occurredAt")} ${qiri(e.place)} .`); });
+  return L.join("\n");
+}
+// --- Oxigraph 어댑터 (실제 SPARQL 실행) ---
+let _oxiStore=null,_oxiReady=null,ENGINE="Oxigraph (WASM) 실제 실행";
+function sparqlReady(){ if(_oxiReady)return _oxiReady; _oxiReady=(async()=>{
+  const oxi=await import("https://cdn.jsdelivr.net/npm/oxigraph@0.4/web.js");
+  await oxi.default(); _oxiStore=new oxi.Store();
+  _oxiStore.load(buildNTriples(),{format:"application/n-triples"});
+})(); return _oxiReady; }
+async function sparqlSelect(q){ await sparqlReady();
+  return [..._oxiStore.query(q)].map(sol=>{ const r={}; for(const [k,v] of sol) r[k]={value:v.value,type:v.termType}; return r; }); }
+
+// --- AI 자유 해석(원문만 근거로 사전 생성) + 정직 대조 ---
+const AI_FREE={
+ q1:{answer:"이중섭은 원산에서 부산으로 피란해 영도에 머물렀습니다. 그는 담뱃갑의 은지에 그림을 새기는 독창적인 작품 활동을 했는데, 이는 전쟁의 어려운 상황 속에서도 예술혼을 잃지 않았던 모습을 보여줍니다.",
+   gap:"원산·영도는 맞혔지만 창작물을 ‘은지화’라는 이름의 개체로 특정하진 못하고 뭉뚱그림.",
+   warrant:"이중섭 –창작→ 은지화 –제작장소→ 영도까지, 명시된 개체·관계를 그대로 반환."},
+ q2:{answer:"우암동 소막마을, 아미동 비석마을, 감천마을에 피란민이 정착했습니다. 이 외에도 산복도로를 따라 판잣집 공동체가 형성되었고, 보수동·광복동 등 원도심 일대에도 피란민들이 정착했습니다.",
+   gap:"정확한 3곳 외에 보수동·광복동 등을 ‘정착지’로 덧붙임 — settledAt 관계가 아닌 곳까지 포함(과잉).",
+   warrant:"settledAt 관계에 해당하는 3곳만, 빠짐없이·더함 없이 반환."},
+ q3:{answer:"광복동의 밀다원다방은 김동리 같은 문인들이 모여 시대를 논하던 공간으로, 그 풍경은 훗날 소설의 배경이 되었습니다. 즉 밀다원다방과 그곳을 드나든 문인들, 그리고 소설이 광복동과 관련됩니다.",
+   gap:"밀다원다방·김동리·소설은 짚었으나 광복동에서 활동한 화가 김환기를 누락.",
+   warrant:"광복동에 직접 연결된 개체를 전수(김환기·밀다원다방·밀다원시대) 반환."},
+ q4:{answer:"1953년 부산에서는 국제시장과 부산역 앞에서 잇따라 큰불이 났습니다. 같은 해 7월 정전협정이 체결되었고, 이후 정부가 서울로 환도하면서 임시수도 시기가 끝났습니다.",
+   gap:"사건은 나열했으나 각 사건의 발생 장소·날짜를 구조적으로 짝지어 주진 못함.",
+   warrant:"Event–date–occurredAt를 조인해 1953년 사건과 장소를 정확히 짝지어 반환."},
+ q5:{answer:"이 이야기에서 가장 중심적인 대상은 ‘부산’입니다. 임시수도로서의 정치·행정, 피란민의 생활, 상권과 예술 활동이 모두 부산을 중심으로 얽혀 있기 때문입니다.",
+   gap:"‘부산’이라 단정했으나 근거는 인상에 기댐 — 무엇이 얼마나 연결됐는지 정량이 없음.",
+   warrant:"관계 엣지 수를 실제로 세어(COUNT) 상위를 순위로 반환 — 검증 가능."},
+ q6:{answer:"윤이상은 한국 현대음악을 대표하는 작곡가로 교향곡·성악곡·실내악곡 등 다양한 작품을 남겼습니다. 부산 피란 시절에도 음악 활동을 이어갔고, 이후 독일에서 더욱 활발히 창작했습니다.",
+   gap:"이 데이터엔 없는 외부지식(교향곡·성악곡 등)을 끌어와 답함 — 주어진 데이터로는 검증 불가.",
+   warrant:"이 데이터엔 윤이상의 창작 관계가 없어 ‘없음’으로 답하고, 아는 것(부산 활동)만 밝힘."}
+};
+
+// --- 질의 카탈로그 (6종) ---
+const QUERIES=[
+ { id:"q1", type:"경로·다단계", param:{list:()=>Q_PERSONS, def:"이중섭"},
+   nl:s=>`${s}은(는) 어디서 피란해 무엇을 하고 무엇을 만들었나?`,
+   sparql:s=>`${PFX}\nSELECT ?p ?o ?madeAt WHERE {\n  ex:${s} ?p ?o .\n  FILTER(?p != rdfs:label && ?p != rdf:type)\n  OPTIONAL { ?o ex:createdAt ?madeAt }\n}`,
+   async run(s){ const rows=await sparqlSelect(this.sparql(s));
+     const rel=rows.filter(r=>!/placeType|lat|lng/.test(r.p.value));
+     if(!rel.length) return {empty:true, answerHTML:`데이터에 <b>${s}</b>의 관계가 없습니다.`, prov:[], nodes:[s]};
+     const parts=rel.map(r=>{ const p=predKo(r.p.value),o=qDisp(r.o.value);
+       return r.madeAt?`${p} → ${o} (제작지: ${qDisp(r.madeAt.value)})`:`${p} → ${o}`; });
+     const prov=rel.flatMap(r=>{ const t=[[s,predKo(r.p.value),qDisp(r.o.value)]];
+       if(r.madeAt)t.push([qDisp(r.o.value),"제작장소",qDisp(r.madeAt.value)]); return t; });
+     const nodes=[s,...rel.map(r=>r.o.value.split("#").pop()),...rel.filter(r=>r.madeAt).map(r=>r.madeAt.value.split("#").pop())];
+     return {empty:false, answerHTML:`<b>${s}</b>: `+parts.join(" · "), prov, nodes}; } },
+
+ { id:"q2", type:"전수·빠짐없음",
+   nl:()=>`피란민이 정착한 곳을 모두 말해줘.`,
+   sparql:()=>`${PFX}\nSELECT ?place WHERE {\n  ex:피란민 ex:settledAt ?place .\n}`,
+   async run(){ const rows=await sparqlSelect(this.sparql());
+     const ps=rows.map(r=>qDisp(r.place.value));
+     return {empty:false, answerHTML:`피란민이 정착한 곳은 <b>${ps.length}곳</b>: ${ps.join(", ")}`,
+       prov:ps.map(p=>["피란민","정착",p]), nodes:["피란민",...rows.map(r=>r.place.value.split("#").pop())]}; } },
+
+ { id:"q3", type:"이웃·연결", param:{list:()=>Q_PLACES, def:"광복동"},
+   nl:s=>`${s}과(와) 직접 연결된 개체는?`,
+   sparql:s=>`${PFX}\nSELECT ?other ?p ?dir WHERE {\n  { ex:${s} ?p ?other . BIND("→" AS ?dir)\n    FILTER(?p != rdfs:label && ?p != rdf:type && ?p != ex:placeType && ?p != ex:lat && ?p != ex:lng) }\n  UNION\n  { ?other ?p ex:${s} . BIND("←" AS ?dir) }\n}`,
+   async run(s){ const rows=await sparqlSelect(this.sparql(s));
+     if(!rows.length) return {empty:true, answerHTML:`<b>${s}</b>과(와) 연결된 개체가 없습니다.`, prov:[], nodes:[s]};
+     const parts=rows.map(r=>`${qDisp(r.other.value)} (${predKo(r.p.value)})`);
+     const prov=rows.map(r=> r.dir.value==="→" ? [s,predKo(r.p.value),qDisp(r.other.value)] : [qDisp(r.other.value),predKo(r.p.value),s]);
+     return {empty:false, answerHTML:`<b>${s}</b>과(와) 직접 연결된 개체 <b>${rows.length}개</b>: ${parts.join(", ")}`,
+       prov, nodes:[s,...rows.map(r=>r.other.value.split("#").pop())]}; } },
+
+ { id:"q4", type:"필터·조인",
+   nl:()=>`1953년에 일어난 사건과 그 장소는?`,
+   sparql:()=>`${PFX}\nSELECT ?ev ?place ?d WHERE {\n  ?e a ex:Event ; rdfs:label ?ev ; ex:date ?d ; ex:occurredAt ?place .\n  FILTER(STRSTARTS(STR(?d), "1953"))\n}`,
+   async run(){ const rows=await sparqlSelect(this.sparql());
+     rows.sort((a,b)=>a.d.value<b.d.value?-1:1);
+     const parts=rows.map(r=>`${r.ev.value} — ${qDisp(r.place.value)} (${r.d.value})`);
+     return {empty:false, answerHTML:`1953년 사건 <b>${rows.length}건</b>:<br>`+parts.join("<br>"),
+       prov:rows.map(r=>[r.ev.value,"발생",qDisp(r.place.value)]),
+       nodes:rows.map(r=>r.place.value.split("#").pop()).concat(rows.map(r=>nospace(r.ev.value)))}; } },
+
+ { id:"q5", type:"집계·중심성",
+   nl:()=>`가장 많은 관계로 연결된 개체 Top 3?`,
+   sparql:()=>`${PFX}\nSELECT ?n (COUNT(*) AS ?deg) WHERE {\n  { ?n ?p ?o } UNION { ?s ?p ?n }\n  FILTER(?p IN (ex:evacuatedFrom,ex:stayedAt,ex:created,ex:createdAt,ex:evacuatedTo,ex:workedAt,\n    ex:frequented,ex:wrote,ex:setIn,ex:locatedIn,ex:relocatedTo,ex:usedAsOffice,ex:residedAt,\n    ex:involvedIn,ex:partOf,ex:occurredAt,ex:gatheredAt,ex:settledAt,ex:formedAt))\n}\nGROUP BY ?n ORDER BY DESC(?deg) LIMIT 3`,
+   async run(){ const rows=await sparqlSelect(this.sparql());
+     const parts=rows.map((r,i)=>`${i+1}. ${qDisp(r.n.value)} (연결 ${r.deg.value})`);
+     return {empty:false, answerHTML:parts.join("<br>"),
+       prov:rows.map(r=>[qDisp(r.n.value),"연결 수",r.deg.value]),
+       nodes:rows.map(r=>r.n.value.split("#").pop())}; } },
+
+ { id:"q6", type:"부재·반환각", param:{list:()=>Q_PERSONS, def:"윤이상"},
+   nl:s=>`${s}이(가) 창작한 작품은?`,
+   sparql:s=>`${PFX}\nSELECT ?work WHERE {\n  { ex:${s} ex:created ?work } UNION { ex:${s} ex:wrote ?work }\n}`,
+   async run(s){ const rows=await sparqlSelect(this.sparql(s));
+     if(rows.length){ const ws=rows.map(r=>qDisp(r.work.value));
+       return {empty:false, answerHTML:`<b>${s}</b>의 작품: ${ws.join(", ")}`,
+         prov:ws.map(w=>[s,"창작/집필",w]), nodes:[s,...rows.map(r=>r.work.value.split("#").pop())]}; }
+     const known=await sparqlSelect(`${PFX}\nSELECT ?p ?o WHERE { ex:${s} ?p ?o . FILTER(?p != rdfs:label && ?p != rdf:type) }`);
+     const kparts=known.filter(r=>!/placeType|lat|lng/.test(r.p.value)).map(r=>`${predKo(r.p.value)} → ${qDisp(r.o.value)}`);
+     return {empty:true,
+       answerHTML:`데이터에 <b>${s}</b>의 창작 작품 관계가 <span class="none">없습니다</span>.`,
+       knownHTML: kparts.length?`대신 아는 것: ${kparts.join(", ")}`:"",
+       prov:[], nodes:[s,...known.map(r=>r.o.value.split("#").pop())]}; } }
+];
+
+// --- 근거 하이라이트(관계망 연동) ---
+function highlightSubgraph(names){
+  const valid=new Set(names.filter(n=>nodeMap.has(n)));
+  netNodes.update([...nodeMap.keys()].map(id=>({id, opacity: valid.has(id)?1:0.12})));
+  netEdges.update(TRIPLES.map((t,i)=>({id:i,
+    color: (valid.has(t[0])&&valid.has(t[2]))?{color:"#8c3b2e",opacity:1}:{color:"#e2ddd2",opacity:0.3}})));
+}
+function clearHighlight(){
+  netNodes.update([...nodeMap.keys()].map(id=>({id,opacity:1})));
+  netEdges.update(TRIPLES.map((t,i)=>({id:i,color:{color:"#c3b8a5",highlight:"#8c3b2e"}})));
+}
+
+// --- UI ---
+const qList=document.getElementById("q-list"), qResult=document.getElementById("q-result");
+let qActiveParam={};
+function renderQList(){
+  qList.innerHTML=QUERIES.map(q=>`<li data-id="${q.id}"><div class="qt">${q.type}</div><div class="qq">${q.nl(q.param?q.param.def:"")}</div></li>`).join("");
+  qList.querySelectorAll("li").forEach(li=>li.addEventListener("click",()=>selectQuery(li.dataset.id)));
+}
+async function selectQuery(id){
+  clearHighlight();
+  qList.querySelectorAll("li").forEach(li=>li.classList.toggle("on",li.dataset.id===id));
+  const q=QUERIES.find(x=>x.id===id);
+  const subj = q.param ? (qActiveParam[id]||q.param.def) : null;
+  qResult.innerHTML=`<div class="q-nl">${q.nl(subj||"")}</div><div class="q-hint">SPARQL 실행 중…</div>`;
+  let out; try{ out=await q.run(subj); }catch(e){ qResult.innerHTML=`<div class="q-nl">오류</div><pre class="q-sparql">${e.message}</pre>`; return; }
+  qResult.innerHTML=resultCardHTML(q,subj,out);
+  // 파라메트릭 select 배선
+  const sel=qResult.querySelector(".q-param select");
+  if(sel) sel.addEventListener("change",()=>{ qActiveParam[id]=sel.value; selectQuery(id); });
+  // 관계망 버튼
+  const gb=qResult.querySelector(".q-graphbtn");
+  if(gb) gb.addEventListener("click",()=>{ highlightSubgraph(out.nodes||[]); document.getElementById("network").scrollIntoView({behavior:"smooth",block:"start"}); });
+}
+function resultCardHTML(q,subj,out){
+  const ai=AI_FREE[q.id]||{};
+  const paramHTML=q.param?`<div class="q-param">대상 선택: <select>${q.param.list().map(o=>`<option ${o===subj?"selected":""}>${o}</option>`).join("")}</select></div>`:"";
+  const provHTML=(out.prov&&out.prov.length)?`<div class="q-sec-label">근거 트리플</div><div class="q-prov">`+
+    out.prov.map(([s,p,o])=>`<span class="tri"><b>${s}</b> <span class="pr">–${p}→</span> <b>${o}</b></span>`).join("")+`</div>`:"";
+  const graphBtn=(out.nodes&&out.nodes.some(n=>nodeMap.has(n)))?`<button class="q-graphbtn">관계망에서 근거 보기</button>`:"";
+  const answerCls=out.empty?"q-answer empty":"q-answer";
+  const known=out.knownHTML?`<div class="known">${out.knownHTML}</div>`:"";
+  return `<div class="q-nl">${q.nl(subj||"")}</div>${paramHTML}`+
+    `<div class="q-sec-label">실행된 SPARQL</div><pre class="q-sparql">${q.sparql(subj).replace(/</g,"&lt;")}</pre>`+
+    `<div class="q-sec-label">답 (그래프에서)</div><div class="${answerCls}">${out.answerHTML}${known}</div>`+
+    provHTML+graphBtn+
+    `<div class="q-sec-label">AI 자유 해석 vs 온톨로지 — 무엇이 다른가</div>`+
+    `<div class="contrast">`+
+      `<div class="col c-ai"><h5>원문만 읽은 AI 자유 해석 (예시)</h5><p>${ai.answer||""}</p><div class="gap">한계: ${ai.gap||""}</div></div>`+
+      `<div class="col c-onto"><h5>온톨로지 · SPARQL 답</h5><p>${out.answerHTML.replace(/<[^>]+>/g,"")}</p><div class="warrant">보장: ${ai.warrant||""}</div></div>`+
+    `</div>`+
+    `<div class="q-engine">실행: ${ENGINE} · 네임스페이스 ex:&lt;${qNS}&gt;</div>`;
+}
+renderQList();
+// 노드 클릭 시 질의 하이라이트 해제(관계망 자체 상호작용 우선)
+network.on("click",()=>{ if([...nodeMap.keys()].some(id=>{const n=network.body.nodes[id]; return n&&n.options.opacity!==undefined&&n.options.opacity<1;})) clearHighlight(); });
 </script>
 </body>
 </html>
