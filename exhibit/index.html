@@ -304,7 +304,23 @@
   .about-prose p{font-size:14.5px;color:#413a33;margin:0 0 12px}
   footer{max-width:1080px;margin:24px auto 60px;padding:20px 26px;color:var(--muted);
     font-size:13px;border-top:1px solid var(--line)}
-  footer code{background:#f2f0ec;padding:1px 5px;border-radius:4px}
+  footer code{background:#f2f0ec;padding:1px 5px;border-radius:4px;font-size:12px}
+  .foot-intro{line-height:1.7}
+  .foot-sources{margin:10px 0 0}
+  .foot-sources>summary{cursor:pointer;font-weight:700;color:var(--accent2);font-size:13px;list-style:none;padding:9px 0}
+  .foot-sources>summary::-webkit-details-marker{display:none}
+  .foot-sources>summary::before{content:"▸  ";color:var(--point)}
+  .foot-sources[open]>summary::before{content:"▾  "}
+  .foot-body{padding:4px 0 2px;display:flex;flex-direction:column;gap:10px;line-height:1.75}
+  .fs-block b{color:#3a332d}
+  .fs-block a{color:var(--accent)}
+  .fs-imglist{margin:7px 0 0;padding-left:18px;columns:2;column-gap:26px;font-size:12.5px}
+  .fs-imglist li{margin:2px 0;break-inside:avoid}
+  .fs-imglist a{color:var(--accent);text-decoration:none}
+  .fs-imglist a:hover{text-decoration:underline}
+  .foot-copy{margin-top:15px;padding-top:12px;border-top:1px dashed var(--line);font-size:12px}
+  .foot-copy a{color:var(--accent)}
+  @media(max-width:640px){.fs-imglist{columns:1}}
   @media(max-width:760px){
     .map-wrap{flex-direction:column;height:auto}
     .map-wrap #map-view{height:400px}
@@ -519,10 +535,20 @@
 </main>
 
 <footer>
-  이 전시는 워크숍 실습 데이터(<code>places.csv</code> · <code>events.csv</code> · <code>triples.csv</code> · <code>texts.txt</code>)를
-  단일 페이지로 엮은 <b>레퍼런스 예시</b>입니다. 좌표·정보는 교육용 근사값이며,
-  온톨로지 설계는 <code>../ontology/design.md</code>, 이미지 출처·라이선스는 <code>../CREDITS.md</code>를 참고하세요.<br>
-  대표 이미지: Wikimedia Commons (PD·CC0·CC BY / 일부 자체 도식) · 라이브러리: Leaflet · vis-timeline · vis-network · wordcloud2.js
+  <div class="foot-intro">이 전시는 워크숍 실습 데이터를 단일 페이지로 엮은 <b>레퍼런스 예시</b>입니다. 좌표·정보는 교육용 근사값입니다.</div>
+  <details class="foot-sources">
+    <summary>데이터 · 이미지 · 라이브러리 출처</summary>
+    <div class="foot-body">
+      <div class="fs-block"><b>실습 데이터</b> — <code>places.csv</code> · <code>events.csv</code> · <code>triples.csv</code> · <code>texts.txt</code> (피란수도 부산 워크숍, 교육용 근사값). 온톨로지 설계는 <code>ontology/design.md</code>, 기계가독 스키마는 <code>ontology/ontology.jsonld</code>.</div>
+      <div class="fs-block"><b>히어로 이미지</b> — <a href="https://commons.wikimedia.org/wiki/File:De_haven_van_Pusan,_NG-2009-136-22.jpg" target="_blank" rel="noopener">부산항, 1952 · Rijksmuseum (CC0)</a>, Wikimedia Commons.</div>
+      <div class="fs-block"><b>대표 이미지 <span id="fs-count"></span></b> — 모두 Wikimedia Commons에서 퍼블릭도메인·CC0·CC BY(-SA)로 확인된 것만 사용(각 라이선스 아래 표기). 대표 이미지가 없는 항목은 자체 제작 도식으로 대체.
+        <ul class="fs-imglist" id="fs-imglist"></ul>
+      </div>
+      <div class="fs-block"><b>라이브러리 · 폰트 · 지도</b> — Leaflet · vis-timeline · vis-network · wordcloud2.js · Oxigraph(WASM, SPARQL) · Nanum Myeongjo · Pretendard · 지도 타일 © CARTO, © OpenStreetMap 기여자.</div>
+      <div class="fs-block"><b>위키백과</b> — 사건·인물·장소 문서 링크는 각 항목의 상세·캡션에서 연결됩니다.</div>
+    </div>
+  </details>
+  <div class="foot-copy">피란수도 부산 · DH 이해하기 III 워크숍 레퍼런스 · <a href="https://github.com/ArchivelabEdu/psu-dh2026" target="_blank" rel="noopener">소스·라이선스(GitHub)</a></div>
 </footer>
 
 <script>
@@ -1449,6 +1475,15 @@ document.querySelectorAll("#pg-help-body button[data-h]").forEach(b=>b.addEventL
 })();
 
 pgInput.value="SELECT ?person WHERE {\n  ?person a ex:Person .\n}";
+
+/* 푸터 이미지 출처 목록 — MEDIA에서 실사진만(중복 제거) 자동 생성 */
+(function(){
+  const seen=new Set(), rows=[];
+  Object.entries(MEDIA).forEach(([name,m])=>{ if(m.source && !seen.has(m.img)){ seen.add(m.img); rows.push({name,license:m.license,source:m.source}); }});
+  const cnt=document.getElementById("fs-count"), list=document.getElementById("fs-imglist");
+  if(cnt) cnt.textContent="("+rows.length+"점)";
+  if(list) list.innerHTML=rows.map(r=>`<li><a href="${r.source}" target="_blank" rel="noopener">${r.name}</a> · ${r.license}</li>`).join("");
+})();
 </script>
 </body>
 </html>
