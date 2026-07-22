@@ -203,12 +203,12 @@
   .pgb-slot select:focus{outline:none;border-color:var(--point)}
   .pgb-slot span{font-size:11px;color:var(--muted);text-align:center;font-weight:600}
   .pgb-out{display:flex;align-items:center;gap:12px;margin-top:11px;flex-wrap:wrap}
-  #pgb-preview{flex:1;min-width:200px;font-family:Menlo,Consolas,monospace;font-size:12.5px;color:#3a332d;
+  #pgb-preview,#pg-ex-preview{flex:1;min-width:200px;font-family:Menlo,Consolas,monospace;font-size:12.5px;color:#3a332d;
     background:#fff;border:1px solid var(--line);border-radius:8px;padding:9px 12px;overflow-x:auto;white-space:pre}
-  #pgb-run{border:0;background:var(--point);color:#fff;font:inherit;font-size:13px;font-weight:700;padding:9px 15px;border-radius:8px;cursor:pointer;white-space:nowrap}
-  #pgb-run:hover{filter:brightness(1.06)}
+  #pgb-run,#pg-ex-run{border:0;background:var(--point);color:#fff;font:inherit;font-size:13px;font-weight:700;padding:9px 15px;border-radius:8px;cursor:pointer;white-space:nowrap}
+  #pgb-run:hover,#pg-ex-run:hover{filter:brightness(1.06)}
   @media(max-width:640px){.pgb-slot{min-width:110px}}
-  .pg-help{margin:0 0 12px;border:1px solid var(--line);border-radius:10px;background:#fbfaf8}
+  .pg-help{margin:16px 0 0;border:1px solid var(--line);border-radius:10px;background:#fbfaf8}
   .pg-help>summary{cursor:pointer;font-weight:700;color:var(--point);font-size:13.5px;padding:11px 14px;list-style:none}
   .pg-help>summary::-webkit-details-marker{display:none}
   .pg-help>summary::before{content:"▸  ";color:var(--point)}
@@ -429,17 +429,21 @@
         </div>
         <div class="pgb-out"><code id="pgb-preview"></code><button id="pgb-run">편집창에 넣기 ↓</button></div>
       </div>
-      <details class="pg-help">
-        <summary>SPARQL이 처음이신가요? — 문법 도움말 · 예시</summary>
-        <div class="pg-help-body" id="pg-help-body"></div>
-      </details>
-      <div class="pg-ex" id="pg-ex"></div>
+      <div class="pgb">
+        <div class="pgb-title">예제 질문 — 골라서 편집창에 넣어 보세요</div>
+        <div class="pgb-row"><label class="pgb-slot"><select id="pg-ex-sel"></select><span>예제 질문</span></label></div>
+        <div class="pgb-out"><code id="pg-ex-preview"></code><button id="pg-ex-run">편집창에 넣기 ↓</button></div>
+      </div>
       <textarea id="pg-input" spellcheck="false" aria-label="SPARQL 입력"></textarea>
       <div class="pg-bar">
         <button id="pg-run">실행 (Ctrl+Enter)</button>
         <details class="pg-cheat"><summary>사용 가능한 어휘 보기</summary><div id="pg-cheat"></div></details>
       </div>
       <div id="pg-out"><div class="pg-msg">질의를 실행하면 결과가 표로 표시됩니다.</div></div>
+      <details class="pg-help">
+        <summary>SPARQL이 처음이신가요? — 문법 도움말 · 예시</summary>
+        <div class="pg-help-body" id="pg-help-body"></div>
+      </details>
     </div>
   </section>
 
@@ -1370,8 +1374,11 @@ pgInput.addEventListener("keydown",e=>{ if((e.metaKey||e.ctrlKey)&&e.key==="Ente
 // 편집창에 채우기만(실행은 사용자가) + 실행 버튼 강조
 function pgFill(q){ pgInput.value=q; pgInput.scrollIntoView({behavior:"smooth",block:"center"});
   const rb=document.getElementById("pg-run"); rb.classList.remove("pg-flash"); void rb.offsetWidth; rb.classList.add("pg-flash"); setTimeout(()=>rb.classList.remove("pg-flash"),1600); }
-document.getElementById("pg-ex").innerHTML=PG_EX.map((x,i)=>`<button data-i="${i}">${x.label}</button>`).join("");
-document.querySelectorAll("#pg-ex button").forEach(b=>b.addEventListener("click",()=>{ pgFill(PG_EX[+b.dataset.i].q); }));
+const exSel=document.getElementById("pg-ex-sel");
+exSel.innerHTML=PG_EX.map((x,i)=>`<option value="${i}">${x.label}</option>`).join("");
+const exRefresh=()=>{ document.getElementById("pg-ex-preview").textContent=PG_EX[+exSel.value].q; };
+exSel.addEventListener("change",exRefresh); exRefresh();
+document.getElementById("pg-ex-run").addEventListener("click",()=>pgFill(PG_EX[+exSel.value].q));
 const PG_PREDS=[...new Set(TRIPLES.map(t=>t[1].replace(/\(.*\)/,"")))];
 document.getElementById("pg-cheat").innerHTML=
   `<div><b>접두어</b>  ex: · rdf: · rdfs: · xsd: (자동 적용)</div>`+
