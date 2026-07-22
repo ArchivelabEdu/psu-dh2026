@@ -190,6 +190,39 @@
   .contrast .gap{margin-top:8px;font-size:12px;color:#8a5a3c;background:#fbf3ec;border-radius:6px;padding:6px 8px}
   .contrast .warrant{margin-top:8px;font-size:12px;color:#3a332d;background:#f2ede9;border-radius:6px;padding:6px 8px}
   .q-engine{font-size:11px;color:#9a8f80;margin-top:14px}
+  /* SPARQL 플레이그라운드 */
+  .pg{border-top:1px solid var(--line);margin-top:6px}
+  .pg-desc{font-size:13.5px;color:var(--muted);margin:2px 0 11px}
+  .pg-desc code{background:#f2efe9;padding:1px 5px;border-radius:4px;font-size:12.5px}
+  .pg-ex{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+  .pg-ex button{border:1px solid var(--line);background:#fff;color:var(--accent2);font:inherit;font-size:12.5px;
+    font-weight:600;padding:5px 11px;border-radius:20px;cursor:pointer;transition:border-color .15s,background .15s}
+  .pg-ex button:hover{background:#f6f4f0;border-color:var(--point)}
+  #pg-input{width:100%;min-height:150px;resize:vertical;font-family:"SFMono-Regular",Menlo,Consolas,monospace;
+    font-size:13px;line-height:1.6;color:#2b2622;background:#fbfaf8;border:1px solid var(--line);
+    border-radius:10px;padding:12px 14px}
+  #pg-input:focus{outline:none;border-color:var(--point);box-shadow:0 0 0 2px rgba(217,72,43,.13)}
+  .pg-bar{display:flex;align-items:center;gap:16px;margin:11px 0;flex-wrap:wrap}
+  #pg-run{border:0;background:var(--point);color:#fff;font:inherit;font-size:14px;font-weight:700;
+    padding:9px 18px;border-radius:9px;cursor:pointer}
+  #pg-run:hover{filter:brightness(1.06)}
+  .pg-cheat{font-size:12.5px;color:var(--muted)}
+  .pg-cheat summary{cursor:pointer;font-weight:600;color:var(--accent2)}
+  .pg-cheat #pg-cheat{margin-top:8px;display:flex;flex-direction:column;gap:5px;line-height:1.6;
+    background:#f7f6f4;border:1px solid var(--line);border-radius:8px;padding:11px 13px}
+  .pg-cheat #pg-cheat b{color:var(--point)}
+  #pg-out{margin-top:4px}
+  .pg-msg{color:var(--muted);font-size:13.5px;padding:8px 0}
+  .pg-err{color:#b3402b;background:#fbeee9;border:1px solid #e7c3b8;border-radius:8px;padding:11px 13px;font-size:13.5px;white-space:pre-wrap}
+  .pg-count{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:6px}
+  .pg-tw{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+  .pg-table{border-collapse:collapse;width:100%;font-size:13px}
+  .pg-table th{background:#f6f4f0;text-align:left;padding:8px 12px;color:var(--accent2);font-weight:700;border-bottom:1px solid var(--line);white-space:nowrap}
+  .pg-table td{padding:7px 12px;border-bottom:1px solid #f0ede8;vertical-align:top}
+  .pg-table tr:last-child td{border-bottom:0}
+  .pg-iri{color:var(--accent);font-weight:600}
+  .pg-lit{color:#2b6f5f}
+  .pg-null{color:#bbb}
   /* 언어 */
   .wc-stage{position:relative;border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden}
   #wordcloud{height:460px;width:100%;display:block}
@@ -347,6 +380,17 @@
     <div class="viz q-wrap">
       <ul class="q-list" id="q-list"></ul>
       <div class="q-result" id="q-result"><div class="q-hint">왼쪽에서 질문을 선택하세요.</div></div>
+    </div>
+    <div class="viz pg">
+      <div class="q-sec-label">직접 질의 — SPARQL 플레이그라운드</div>
+      <p class="pg-desc">직접 SPARQL을 써서 이 그래프에 물어보세요. 실제 엔진이 실행하며, 접두어(<code>ex:</code> 등)는 자동으로 붙습니다.</p>
+      <div class="pg-ex" id="pg-ex"></div>
+      <textarea id="pg-input" spellcheck="false" aria-label="SPARQL 입력"></textarea>
+      <div class="pg-bar">
+        <button id="pg-run">실행 (Ctrl+Enter)</button>
+        <details class="pg-cheat"><summary>사용 가능한 어휘 보기</summary><div id="pg-cheat"></div></details>
+      </div>
+      <div id="pg-out"><div class="pg-msg">질의를 실행하면 결과가 표로 표시됩니다.</div></div>
     </div>
   </section>
 
@@ -1237,6 +1281,53 @@ function resultCardHTML(q,subj,out){
 renderQList();
 // 노드 클릭 시 질의 하이라이트 해제(관계망 자체 상호작용 우선)
 network.on("click",()=>{ if([...nodeMap.keys()].some(id=>{const n=network.body.nodes[id]; return n&&n.options.opacity!==undefined&&n.options.opacity<1;})) clearHighlight(); });
+
+/* ===== ⑤-b SPARQL 플레이그라운드 (직접 편집·실행) ===== */
+const pgInput=document.getElementById("pg-input"), pgOut=document.getElementById("pg-out");
+const pgEsc=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const PG_PFX=`${PFX}\nPREFIX xsd: <${Q_XSD}>`;
+const PG_EX=[
+ {label:"인물 목록", q:`SELECT ?person WHERE {\n  ?person a ex:Person .\n}`},
+ {label:"피란민이 모인 곳", q:`SELECT ?place WHERE {\n  ex:피란민 ex:gatheredAt ?place .\n}`},
+ {label:"부산에 연결된 모든 것", q:`SELECT ?s ?rel WHERE {\n  ?s ?rel ex:부산 .\n}`},
+ {label:"관계 종류별 개수", q:`SELECT ?rel (COUNT(*) AS ?n) WHERE {\n  ?s ?rel ?o .\n}\nGROUP BY ?rel ORDER BY DESC(?n)`},
+ {label:"이중섭에서 2단계로 닿는 것", q:`SELECT ?mid ?end WHERE {\n  ex:이중섭 ?p ?mid .\n  ?mid ?p2 ?end .\n}`}
+];
+function pgFmt(t){ if(t.termType==="NamedNode") return `<span class="pg-iri">${pgEsc(decodeURI(t.value.split("#").pop()||t.value))}</span>`;
+  return `<span class="pg-lit">${pgEsc(t.value)}</span>`; }
+function pgRender(res){
+  if(typeof res==="boolean"){ pgOut.innerHTML=`<div class="pg-msg">ASK 결과: <b>${res}</b></div>`; return; }
+  const arr=[...res];
+  if(!arr.length){ pgOut.innerHTML=`<div class="pg-msg">결과가 없습니다 (0행).</div>`; return; }
+  if(typeof arr[0].get==="function"){                       // SELECT → 표
+    const cols=[]; arr.forEach(sol=>{ for(const [k] of sol) if(!cols.includes(k)) cols.push(k); });
+    const thead=cols.map(c=>`<th>?${pgEsc(c)}</th>`).join("");
+    const tbody=arr.map(sol=>"<tr>"+cols.map(c=>{const t=sol.get(c);return `<td>${t?pgFmt(t):'<span class="pg-null">—</span>'}</td>`;}).join("")+"</tr>").join("");
+    pgOut.innerHTML=`<div class="pg-count">${arr.length}행</div><div class="pg-tw"><table class="pg-table"><thead><tr>${thead}</tr></thead><tbody>${tbody}</tbody></table></div>`;
+  } else if(arr[0].subject){                                 // CONSTRUCT → 트리플 표
+    const tbody=arr.map(q=>`<tr><td>${pgFmt(q.subject)}</td><td>${pgFmt(q.predicate)}</td><td>${pgFmt(q.object)}</td></tr>`).join("");
+    pgOut.innerHTML=`<div class="pg-count">${arr.length} 트리플</div><div class="pg-tw"><table class="pg-table"><thead><tr><th>주어</th><th>서술어</th><th>목적어</th></tr></thead><tbody>${tbody}</tbody></table></div>`;
+  } else pgOut.innerHTML=`<div class="pg-msg">${arr.length}개 결과</div>`;
+}
+async function pgRun(){
+  let q=pgInput.value.trim(); if(!q){ pgOut.innerHTML=`<div class="pg-msg">질의를 입력하세요.</div>`; return; }
+  if(!/PREFIX\s+ex:/i.test(q)) q=PG_PFX+"\n"+q;
+  pgOut.innerHTML=`<div class="pg-msg">실행 중…</div>`;
+  try{ await sparqlReady(); pgRender(_oxiStore.query(q)); }
+  catch(e){ pgOut.innerHTML=`<div class="pg-err"><b>오류:</b> ${pgEsc(e.message)}</div>`; }
+}
+document.getElementById("pg-run").addEventListener("click",pgRun);
+pgInput.addEventListener("keydown",e=>{ if((e.metaKey||e.ctrlKey)&&e.key==="Enter"){ e.preventDefault(); pgRun(); } });
+document.getElementById("pg-ex").innerHTML=PG_EX.map((x,i)=>`<button data-i="${i}">${x.label}</button>`).join("");
+document.querySelectorAll("#pg-ex button").forEach(b=>b.addEventListener("click",()=>{ pgInput.value=PG_EX[+b.dataset.i].q; pgRun(); }));
+const PG_PREDS=[...new Set(TRIPLES.map(t=>t[1].replace(/\(.*\)/,"")))];
+document.getElementById("pg-cheat").innerHTML=
+  `<div><b>접두어</b>  ex: · rdf: · rdfs: · xsd: (자동 적용)</div>`+
+  `<div><b>클래스</b>  ex:Person · ex:Place · ex:Event · ex:Work · ex:Group</div>`+
+  `<div><b>관계(술어)</b>  ${PG_PREDS.map(p=>"ex:"+p).join(" · ")}</div>`+
+  `<div><b>속성</b>  rdfs:label · ex:date · ex:placeType · ex:lat · ex:lng</div>`+
+  `<div><b>개체 예</b>  ex:이중섭 · ex:부산 · ex:광복동 · ex:피란민 · ex:국제시장 (한글 IRI 그대로)</div>`;
+pgInput.value="# 온톨로지에게 직접 물어보세요. 예: 모든 인물 찾기\nSELECT ?person WHERE {\n  ?person a ex:Person .\n}";
 </script>
 </body>
 </html>
