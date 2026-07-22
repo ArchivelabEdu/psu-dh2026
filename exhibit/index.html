@@ -50,6 +50,10 @@
   .hero .rule{width:54px;height:3px;background:var(--point);margin:22px auto 18px;border-radius:2px}
   .hero .years{font-family:var(--serif);font-size:clamp(16px,2.6vw,22px);color:#fff;font-weight:700;opacity:.96}
   .hero p.lede{max-width:600px;margin:16px auto 0;color:rgba(255,255,255,.9);font-size:15.5px;line-height:1.8}
+  .hero-credit{position:absolute;right:14px;bottom:11px;z-index:3;font-size:11px;letter-spacing:.02em;
+    color:rgba(255,255,255,.72);text-decoration:none;background:rgba(0,0,0,.28);padding:3px 10px;border-radius:20px}
+  .hero-credit:hover{color:#fff;background:rgba(0,0,0,.46);text-decoration:underline}
+  @media(max-width:640px){.hero-credit{right:10px;bottom:8px;font-size:10px;padding:2px 8px}}
   /* 내비게이션(브랜드 + 링크) */
   nav{position:sticky;top:0;z-index:1000;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);
     border-bottom:1px solid var(--line);padding:9px 22px;display:flex;align-items:center;
@@ -323,9 +327,10 @@
     <h1>피란수도 부산</h1>
     <div class="rule"></div>
     <div class="years">1950 — 1953 · 임시수도의 기억</div>
-    <p class="lede">한국전쟁기 임시수도가 된 항구도시 부산. 피란민과 예술가, 정부와 시장이 얽힌
-      3년의 기억을 <b>장소·사건·관계·언어</b> 네 가지 시선으로 펼쳐 본다.</p>
+    <p class="lede">한국전쟁기 대한민국의 임시수도가 된 항구도시 부산. 피란민과 예술가, 정부와 시장이 얽힌
+      3년의 기억을 <b>장소·사건·관계·언어</b> 네 시선으로 펼쳐 보고, <b>온톨로지에게 직접 묻는다.</b></p>
   </div>
+  <a class="hero-credit" href="https://commons.wikimedia.org/wiki/File:De_haven_van_Pusan,_NG-2009-136-22.jpg" target="_blank" rel="noopener">사진 · 부산항, 1952 — Rijksmuseum (CC0)</a>
 </header>
 
 <nav>
