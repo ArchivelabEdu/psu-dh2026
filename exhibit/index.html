@@ -1032,6 +1032,25 @@ const Q_LABEL={}; EVENTS.forEach(e=>{ Q_LABEL[nospace(e.title)]=e.title; });
 const PRED_KO={}; TRIPLES.forEach(([,p])=>{ const m=p.match(/^([A-Za-z]+)\((.+)\)$/); if(m) PRED_KO[m[1]]=m[2]; });
 const qDisp=v=>{ const n=(v.split("#").pop()); return Q_LABEL[n]||n; };
 const predKo=p=>{ const n=p.split("#").pop(); return PRED_KO[n]||n; };
+// 한국어 조사 처리(받침 유무)
+const _bat=s=>{ const c=s.charCodeAt(s.length-1); return c>=0xAC00&&c<=0xD7A3&&(c-0xAC00)%28!==0; };
+const jEul=o=>o+(_bat(o)?"을":"를");
+const jEun=o=>o+(_bat(o)?"은":"는");
+const jI=o=>o+(_bat(o)?"이":"가");
+const jEuro=o=>{ const c=o.charCodeAt(o.length-1); const b=(c>=0xAC00&&c<=0xD7A3)?(c-0xAC00)%28:0; return o+((b===0||b===8)?"로":"으로"); };
+// 서술어 → 자연어 동사구(연결형 c / 종결형 f). 인물 주어 경로·활동용
+const VERB={
+  "피란출발":{c:o=>`${o}에서 피란해`, f:o=>`${o}에서 피란했습니다`},
+  "피란":{c:o=>`${jEuro(o)} 피란해`, f:o=>`${jEuro(o)} 피란했습니다`},
+  "머묾":{c:o=>`${o}에 머물며`, f:o=>`${o}에 머물렀습니다`},
+  "거주":{c:o=>`${o}에 거주하며`, f:o=>`${o}에 거주했습니다`},
+  "활동":{c:o=>`${o}에서 활동하며`, f:o=>`${o}에서 활동했습니다`},
+  "자주드나듦":{c:o=>`${jEul(o)} 드나들며`, f:o=>`${jEul(o)} 자주 드나들었습니다`},
+  "관여":{c:o=>`${o}에 관여하고`, f:o=>`${o}에 관여했습니다`},
+  "이전":{c:o=>`${jEuro(o)} 이전하고`, f:o=>`${jEuro(o)} 이전했습니다`},
+  "청사사용":{c:o=>`${jEul(o)} 청사로 삼고`, f:o=>`${jEul(o)} 청사로 삼았습니다`}
+};
+const VERB_ORDER=["피란출발","피란","이전","머묾","거주","활동","자주드나듦","청사사용","관여","창작","집필"];
 // 인물/장소 목록(파라메트릭)
 const Q_PERSONS=[...new Set(TRIPLES.flatMap(([s,,o])=>[s,o]))].filter(n=>classOf(n)==="Person");
 const Q_PLACES=PLACES.map(p=>p.name).filter(n=>n!=="원산");
@@ -1094,30 +1113,37 @@ const QUERIES=[
    sparql:s=>`${PFX}\nSELECT ?p ?o ?madeAt WHERE {\n  ex:${s} ?p ?o .\n  FILTER(?p != rdfs:label && ?p != rdf:type)\n  OPTIONAL { ?o ex:createdAt ?madeAt }\n}`,
    async run(s){ const rows=await sparqlSelect(this.sparql(s));
      const rel=rows.filter(r=>!/placeType|lat|lng/.test(r.p.value));
-     if(!rel.length) return {empty:true, answerHTML:`데이터에 <b>${s}</b>의 관계가 없습니다.`, prov:[], nodes:[s]};
-     const parts=rel.map(r=>{ const p=predKo(r.p.value),o=qDisp(r.o.value);
-       return r.madeAt?`${p} → ${o} (제작지: ${qDisp(r.madeAt.value)})`:`${p} → ${o}`; });
+     if(!rel.length) return {empty:true, answerHTML:`이 데이터에는 <b>${s}</b>의 관계 정보가 없습니다.`, prov:[], nodes:[s]};
+     const items=rel.map(r=>({p:predKo(r.p.value), o:qDisp(r.o.value), made:r.madeAt?qDisp(r.madeAt.value):null}));
+     const ord=p=>{ const i=VERB_ORDER.indexOf(p); return i<0?99:i; };
+     items.sort((a,b)=>ord(a.p)-ord(b.p));
+     const clause=(it,last)=>{
+       if(it.p==="창작"||it.p==="집필"){ const loc=it.made?`${it.made}에서 `:"";
+         return last?`${loc}${jEul(it.o)} ${it.p}했습니다`:`${loc}${jEul(it.o)} ${it.p}하고`; }
+       const V=VERB[it.p]; if(V) return last?V.f(it.o):V.c(it.o);
+       return `${it.p} ${it.o}`; };
+     const clauses=items.map((it,i)=>clause(it,i===items.length-1));
      const prov=rel.flatMap(r=>{ const t=[[s,predKo(r.p.value),qDisp(r.o.value)]];
        if(r.madeAt)t.push([qDisp(r.o.value),"제작장소",qDisp(r.madeAt.value)]); return t; });
      const nodes=[s,...rel.map(r=>r.o.value.split("#").pop()),...rel.filter(r=>r.madeAt).map(r=>r.madeAt.value.split("#").pop())];
-     return {empty:false, answerHTML:`<b>${s}</b>: `+parts.join(" · "), prov, nodes}; } },
+     return {empty:false, answerHTML:`<b>${s}</b>${_bat(s)?"은":"는"} ${clauses.join(", ")}.`, prov, nodes}; } },
 
  { id:"q2", type:"전수·빠짐없음",
    nl:()=>`피란민이 정착한 곳을 모두 말해줘.`,
    sparql:()=>`${PFX}\nSELECT ?place WHERE {\n  ex:피란민 ex:settledAt ?place .\n}`,
    async run(){ const rows=await sparqlSelect(this.sparql());
      const ps=rows.map(r=>qDisp(r.place.value));
-     return {empty:false, answerHTML:`피란민이 정착한 곳은 <b>${ps.length}곳</b>: ${ps.join(", ")}`,
+     return {empty:false, answerHTML:`피란민이 정착한 곳은 <b>${ps.join(", ")}</b> ${ps.length}곳입니다.`,
        prov:ps.map(p=>["피란민","정착",p]), nodes:["피란민",...rows.map(r=>r.place.value.split("#").pop())]}; } },
 
  { id:"q3", type:"이웃·연결", param:{list:()=>Q_PLACES, def:"광복동"},
    nl:s=>`${s}과(와) 직접 연결된 개체는?`,
    sparql:s=>`${PFX}\nSELECT ?other ?p ?dir WHERE {\n  { ex:${s} ?p ?other . BIND("→" AS ?dir)\n    FILTER(?p != rdfs:label && ?p != rdf:type && ?p != ex:placeType && ?p != ex:lat && ?p != ex:lng) }\n  UNION\n  { ?other ?p ex:${s} . BIND("←" AS ?dir) }\n}`,
    async run(s){ const rows=await sparqlSelect(this.sparql(s));
-     if(!rows.length) return {empty:true, answerHTML:`<b>${s}</b>과(와) 연결된 개체가 없습니다.`, prov:[], nodes:[s]};
-     const parts=rows.map(r=>`${qDisp(r.other.value)} (${predKo(r.p.value)})`);
+     if(!rows.length) return {empty:true, answerHTML:`이 데이터에는 <b>${s}</b>${_bat(s)?"과":"와"} 직접 연결된 개체가 없습니다.`, prov:[], nodes:[s]};
+     const parts=rows.map(r=>`${qDisp(r.other.value)}(${predKo(r.p.value)})`);
      const prov=rows.map(r=> r.dir.value==="→" ? [s,predKo(r.p.value),qDisp(r.other.value)] : [qDisp(r.other.value),predKo(r.p.value),s]);
-     return {empty:false, answerHTML:`<b>${s}</b>과(와) 직접 연결된 개체 <b>${rows.length}개</b>: ${parts.join(", ")}`,
+     return {empty:false, answerHTML:`<b>${s}</b>${_bat(s)?"과":"와"} 직접 연결된 개체는 ${rows.length}개입니다: ${parts.join(", ")}.`,
        prov, nodes:[s,...rows.map(r=>r.other.value.split("#").pop())]}; } },
 
  { id:"q4", type:"필터·조인",
@@ -1125,8 +1151,9 @@ const QUERIES=[
    sparql:()=>`${PFX}\nSELECT ?ev ?place ?d WHERE {\n  ?e a ex:Event ; rdfs:label ?ev ; ex:date ?d ; ex:occurredAt ?place .\n  FILTER(STRSTARTS(STR(?d), "1953"))\n}`,
    async run(){ const rows=await sparqlSelect(this.sparql());
      rows.sort((a,b)=>a.d.value<b.d.value?-1:1);
-     const parts=rows.map(r=>`${r.ev.value} — ${qDisp(r.place.value)} (${r.d.value})`);
-     return {empty:false, answerHTML:`1953년 사건 <b>${rows.length}건</b>:<br>`+parts.join("<br>"),
+     const md=r=>{ const p=r.d.value.split("-"); return `${+p[1]}월 ${+p[2]}일`; };
+     const parts=rows.map(r=>`${md(r)} · ${r.ev.value}(${qDisp(r.place.value)})`);
+     return {empty:false, answerHTML:`1953년에는 <b>${rows.length}건</b>의 사건이 일어났습니다.<br>`+parts.join("<br>"),
        prov:rows.map(r=>[r.ev.value,"발생",qDisp(r.place.value)]),
        nodes:rows.map(r=>r.place.value.split("#").pop()).concat(rows.map(r=>nospace(r.ev.value)))}; } },
 
@@ -1134,8 +1161,8 @@ const QUERIES=[
    nl:()=>`가장 많은 관계로 연결된 개체 Top 3?`,
    sparql:()=>`${PFX}\nSELECT ?n (COUNT(*) AS ?deg) WHERE {\n  { ?n ?p ?o } UNION { ?s ?p ?n }\n  FILTER(?p IN (ex:evacuatedFrom,ex:stayedAt,ex:created,ex:createdAt,ex:evacuatedTo,ex:workedAt,\n    ex:frequented,ex:wrote,ex:setIn,ex:locatedIn,ex:relocatedTo,ex:usedAsOffice,ex:residedAt,\n    ex:involvedIn,ex:partOf,ex:occurredAt,ex:gatheredAt,ex:settledAt,ex:formedAt))\n}\nGROUP BY ?n ORDER BY DESC(?deg) LIMIT 3`,
    async run(){ const rows=await sparqlSelect(this.sparql());
-     const parts=rows.map((r,i)=>`${i+1}. ${qDisp(r.n.value)} (연결 ${r.deg.value})`);
-     return {empty:false, answerHTML:parts.join("<br>"),
+     const parts=rows.map(r=>`${qDisp(r.n.value)} ${r.deg.value}개`);
+     return {empty:false, answerHTML:`가장 많은 관계로 연결된 개체는 <b>${parts.join(", ")}</b> 순입니다.`,
        prov:rows.map(r=>[qDisp(r.n.value),"연결 수",r.deg.value]),
        nodes:rows.map(r=>r.n.value.split("#").pop())}; } },
 
@@ -1144,13 +1171,13 @@ const QUERIES=[
    sparql:s=>`${PFX}\nSELECT ?work WHERE {\n  { ex:${s} ex:created ?work } UNION { ex:${s} ex:wrote ?work }\n}`,
    async run(s){ const rows=await sparqlSelect(this.sparql(s));
      if(rows.length){ const ws=rows.map(r=>qDisp(r.work.value));
-       return {empty:false, answerHTML:`<b>${s}</b>의 작품: ${ws.join(", ")}`,
+       return {empty:false, answerHTML:`<b>${s}</b>${_bat(s)?"이":"가"} 창작한 작품은 ${ws.join(", ")}입니다.`,
          prov:ws.map(w=>[s,"창작/집필",w]), nodes:[s,...rows.map(r=>r.work.value.split("#").pop())]}; }
      const known=await sparqlSelect(`${PFX}\nSELECT ?p ?o WHERE { ex:${s} ?p ?o . FILTER(?p != rdfs:label && ?p != rdf:type) }`);
-     const kparts=known.filter(r=>!/placeType|lat|lng/.test(r.p.value)).map(r=>`${predKo(r.p.value)} → ${qDisp(r.o.value)}`);
+     const kc=known.filter(r=>!/placeType|lat|lng/.test(r.p.value)).map(r=>{ const p=predKo(r.p.value),o=qDisp(r.o.value); const V=VERB[p]; return V?V.f(o):`${o}(${p})`; });
      return {empty:true,
-       answerHTML:`데이터에 <b>${s}</b>의 창작 작품 관계가 <span class="none">없습니다</span>.`,
-       knownHTML: kparts.length?`대신 아는 것: ${kparts.join(", ")}`:"",
+       answerHTML:`이 데이터에는 <b>${s}</b>${_bat(s)?"이":"가"} 창작한 작품 정보가 <span class="none">없습니다</span>.`,
+       knownHTML: kc.length?`대신 이 데이터가 아는 것은 ${kc.join(", ")}`:"",
        prov:[], nodes:[s,...known.map(r=>r.o.value.split("#").pop())]}; } }
 ];
 
@@ -1197,9 +1224,9 @@ function resultCardHTML(q,subj,out){
   const answerCls=out.empty?"q-answer empty":"q-answer";
   const known=out.knownHTML?`<div class="known">${out.knownHTML}</div>`:"";
   return `<div class="q-nl">${q.nl(subj||"")}</div>${paramHTML}`+
-    `<div class="q-sec-label">실행된 SPARQL</div><pre class="q-sparql">${q.sparql(subj).replace(/</g,"&lt;")}</pre>`+
-    `<div class="q-sec-label">답 (그래프에서)</div><div class="${answerCls}">${out.answerHTML}${known}</div>`+
+    `<div class="q-sec-label">자연어 답</div><div class="${answerCls}">${out.answerHTML}${known}</div>`+
     provHTML+graphBtn+
+    `<div class="q-sec-label">이 답을 만든 SPARQL 질의</div><pre class="q-sparql">${q.sparql(subj).replace(/</g,"&lt;")}</pre>`+
     `<div class="q-sec-label">AI 자유 해석 vs 온톨로지 — 무엇이 다른가</div>`+
     `<div class="contrast">`+
       `<div class="col c-ai"><h5>원문만 읽은 AI 자유 해석 (예시)</h5><p>${ai.answer||""}</p><div class="gap">한계: ${ai.gap||""}</div></div>`+
