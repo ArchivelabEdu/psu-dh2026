@@ -318,6 +318,11 @@
   .fs-imglist li{margin:2px 0;break-inside:avoid}
   .fs-imglist a{color:var(--accent);text-decoration:none}
   .fs-imglist a:hover{text-decoration:underline}
+  .fs-ent{margin-top:7px;display:flex;flex-direction:column;gap:5px}
+  .fs-ent-row{font-size:12.5px;line-height:1.6}
+  .fs-ent-k{display:inline-block;min-width:34px;font-weight:700;color:var(--point);margin-right:4px}
+  .fs-ent a{color:var(--accent);text-decoration:none}
+  .fs-ent a:hover{text-decoration:underline}
   .foot-copy{margin-top:15px;padding-top:12px;border-top:1px dashed var(--line);font-size:12px}
   .foot-copy a{color:var(--accent)}
   @media(max-width:640px){.fs-imglist{columns:1}}
@@ -540,12 +545,15 @@
     <summary>데이터 · 이미지 · 라이브러리 출처</summary>
     <div class="foot-body">
       <div class="fs-block"><b>실습 데이터</b> — <code>places.csv</code> · <code>events.csv</code> · <code>triples.csv</code> · <code>texts.txt</code> (피란수도 부산 워크숍, 교육용 근사값). 온톨로지 설계는 <code>ontology/design.md</code>, 기계가독 스키마는 <code>ontology/ontology.jsonld</code>.</div>
+      <div class="fs-block"><b>개체 근거 문서 <span id="fs-entcount"></span></b> — 트리플의 인물·장소·사건은 아래 공개 문서를 근거로 정리했습니다(각 개체는 지도·연표·관계망 상세에서도 바로 연결됩니다).
+        <div class="fs-ent" id="fs-ent"></div>
+      </div>
+      <div class="fs-block"><b>참고 자료</b> — 위키백과(한국어) · <a href="https://encykorea.aks.ac.kr" target="_blank" rel="noopener">한국민족문화대백과사전</a> · <a href="https://busan.grandculture.net" target="_blank" rel="noopener">부산역사문화대전</a>. 트리플은 이 공개 자료를 바탕으로 <b>교육용으로 정리·단순화</b>한 것으로, 좌표·일부 정보는 근사값입니다. 실제 프로젝트에서는 각 트리플에 개별 <code>source</code>(출처) 속성을 기록하길 권장합니다.</div>
       <div class="fs-block"><b>히어로 이미지</b> — <a href="https://commons.wikimedia.org/wiki/File:De_haven_van_Pusan,_NG-2009-136-22.jpg" target="_blank" rel="noopener">부산항, 1952 · Rijksmuseum (CC0)</a>, Wikimedia Commons.</div>
       <div class="fs-block"><b>대표 이미지 <span id="fs-count"></span></b> — 모두 Wikimedia Commons에서 퍼블릭도메인·CC0·CC BY(-SA)로 확인된 것만 사용(각 라이선스 아래 표기). 대표 이미지가 없는 항목은 자체 제작 도식으로 대체.
         <ul class="fs-imglist" id="fs-imglist"></ul>
       </div>
       <div class="fs-block"><b>라이브러리 · 폰트 · 지도</b> — Leaflet · vis-timeline · vis-network · wordcloud2.js · Oxigraph(WASM, SPARQL) · Nanum Myeongjo · Pretendard · 지도 타일 © CARTO, © OpenStreetMap 기여자.</div>
-      <div class="fs-block"><b>위키백과</b> — 사건·인물·장소 문서 링크는 각 항목의 상세·캡션에서 연결됩니다.</div>
     </div>
   </details>
   <div class="foot-copy">피란수도 부산 · DH 이해하기 III 워크숍 레퍼런스 · <a href="https://github.com/ArchivelabEdu/psu-dh2026" target="_blank" rel="noopener">소스·라이선스(GitHub)</a></div>
@@ -1483,6 +1491,23 @@ pgInput.value="SELECT ?person WHERE {\n  ?person a ex:Person .\n}";
   const cnt=document.getElementById("fs-count"), list=document.getElementById("fs-imglist");
   if(cnt) cnt.textContent="("+rows.length+"점)";
   if(list) list.innerHTML=rows.map(r=>`<li><a href="${r.source}" target="_blank" rel="noopener">${r.name}</a> · ${r.license}</li>`).join("");
+})();
+
+/* 푸터 개체 근거 문서 — WIKI에서 인물·장소·사건 등 유형별로 자동 생성 */
+(function(){
+  const kindOf=name=>{
+    if(EVENTS.some(e=>e.title===name)) return "사건";
+    return {Person:"인물",Place:"장소",Event:"사건",Work:"작품",Group:"집단"}[classOf(name)]||"장소";
+  };
+  const kinds={인물:[],장소:[],사건:[],작품:[],집단:[]};
+  Object.entries(WIKI).forEach(([name,url])=>{ (kinds[kindOf(name)]||kinds.장소).push({name,url}); });
+  const order=["인물","장소","사건","작품","집단"];
+  const total=order.reduce((a,k)=>a+kinds[k].length,0);
+  const cnt=document.getElementById("fs-entcount"); if(cnt) cnt.textContent="("+total+"개)";
+  const el=document.getElementById("fs-ent");
+  if(el) el.innerHTML=order.filter(k=>kinds[k].length).map(k=>
+    `<div class="fs-ent-row"><span class="fs-ent-k">${k}</span>`+
+    kinds[k].map(e=>`<a href="${e.url}" target="_blank" rel="noopener">${e.name}</a>`).join(" · ")+`</div>`).join("");
 })();
 </script>
 </body>
