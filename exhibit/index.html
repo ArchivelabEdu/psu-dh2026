@@ -194,6 +194,20 @@
   .pg{border-top:1px solid var(--line);margin-top:6px}
   .pg-desc{font-size:13.5px;color:var(--muted);margin:2px 0 11px}
   .pg-desc code{background:#f2efe9;padding:1px 5px;border-radius:4px;font-size:12.5px}
+  .pgb{border:1px solid var(--line);border-radius:10px;background:#fbf1ee;padding:13px 14px;margin:0 0 12px}
+  .pgb-title{font-size:12.5px;font-weight:700;color:var(--point);margin-bottom:9px}
+  .pgb-title code{background:#fff;padding:1px 5px;border-radius:4px;font-size:11.5px;font-family:Menlo,Consolas,monospace}
+  .pgb-row{display:flex;gap:10px;flex-wrap:wrap}
+  .pgb-slot{flex:1;min-width:150px;display:flex;flex-direction:column;gap:4px}
+  .pgb-slot select{font:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);cursor:pointer}
+  .pgb-slot select:focus{outline:none;border-color:var(--point)}
+  .pgb-slot span{font-size:11px;color:var(--muted);text-align:center;font-weight:600}
+  .pgb-out{display:flex;align-items:center;gap:12px;margin-top:11px;flex-wrap:wrap}
+  #pgb-preview{flex:1;min-width:200px;font-family:Menlo,Consolas,monospace;font-size:12.5px;color:#3a332d;
+    background:#fff;border:1px solid var(--line);border-radius:8px;padding:9px 12px;overflow-x:auto;white-space:pre}
+  #pgb-run{border:0;background:var(--point);color:#fff;font:inherit;font-size:13px;font-weight:700;padding:9px 15px;border-radius:8px;cursor:pointer;white-space:nowrap}
+  #pgb-run:hover{filter:brightness(1.06)}
+  @media(max-width:640px){.pgb-slot{min-width:110px}}
   .pg-help{margin:0 0 12px;border:1px solid var(--line);border-radius:10px;background:#fbfaf8}
   .pg-help>summary{cursor:pointer;font-weight:700;color:var(--point);font-size:13.5px;padding:11px 14px;list-style:none}
   .pg-help>summary::-webkit-details-marker{display:none}
@@ -404,6 +418,15 @@
     <div class="viz pg">
       <div class="q-sec-label">직접 질의 — SPARQL 플레이그라운드</div>
       <p class="pg-desc">직접 SPARQL을 써서 이 그래프에 물어보세요. 실제 엔진이 실행하며, 접두어(<code>ex:</code> 등)는 자동으로 붙습니다.</p>
+      <div class="pgb">
+        <div class="pgb-title">빈칸 채우기 — 세 칸을 고르면 SPARQL이 완성됩니다 (모르는 칸은 <code>?변수</code>로 두세요)</div>
+        <div class="pgb-row">
+          <label class="pgb-slot"><select id="pgb-s"></select><span>주어</span></label>
+          <label class="pgb-slot"><select id="pgb-p"></select><span>관계(서술어)</span></label>
+          <label class="pgb-slot"><select id="pgb-o"></select><span>목적어</span></label>
+        </div>
+        <div class="pgb-out"><code id="pgb-preview"></code><button id="pgb-run">만들어 실행 ▶</button></div>
+      </div>
       <details class="pg-help">
         <summary>SPARQL이 처음이신가요? — 문법 도움말 · 예시</summary>
         <div class="pg-help-body" id="pg-help-body"></div>
@@ -1376,6 +1399,28 @@ document.getElementById("pg-help-body").innerHTML =
   HELP_EX.map((x,i)=>`<div class="help-ex"><div class="he-desc">${x.d}</div><pre>${pgEsc(x.q)}</pre><button data-h="${i}">넣고 실행 ▶</button></div>`).join("");
 document.querySelectorAll("#pg-help-body button[data-h]").forEach(b=>b.addEventListener("click",()=>{
   pgInput.value=HELP_EX[+b.dataset.h].q; pgRun(); pgInput.scrollIntoView({behavior:"smooth",block:"center"}); }));
+
+// 빈칸 채우기 빌더 — 드롭다운을 고르면 SPARQL 자동 완성
+(function(){
+  const CLSKO={Person:"인물",Group:"집단",Place:"장소",Event:"사건",Work:"작품"};
+  const byClass={Person:[],Group:[],Place:[],Event:[],Work:[]};
+  [...nodeMap.keys()].sort().forEach(n=>{ (byClass[classOf(n)]||byClass.Place).push(n); });
+  const entGroups=Object.keys(byClass).filter(c=>byClass[c].length).map(c=>
+    `<optgroup label="${CLSKO[c]}">`+byClass[c].map(n=>`<option value="ex:${n}">${n}</option>`).join("")+`</optgroup>`).join("");
+  const clsGroup=`<optgroup label="클래스(종류)">`+Object.keys(CLSKO).map(c=>`<option value="ex:${c}">ex:${c} (${CLSKO[c]})</option>`).join("")+`</optgroup>`;
+  const S=document.getElementById("pgb-s"), P=document.getElementById("pgb-p"), O=document.getElementById("pgb-o");
+  S.innerHTML=`<option value="?주어">?주어 (알고 싶은 것)</option>`+entGroups;
+  P.innerHTML=`<option value="?관계">?관계 (아무 관계)</option><option value="a">a (종류/rdf:type)</option>`+
+    `<optgroup label="관계(서술어)">`+PG_PREDS.map(p=>`<option value="ex:${p}">${PRED_KO[p]||p} (${p})</option>`).join("")+`</optgroup>`+
+    `<optgroup label="속성">`+[["rdfs:label","이름"],["ex:date","날짜"],["ex:placeType","장소유형"]].map(([v,k])=>`<option value="${v}">${k} (${v})</option>`).join("")+`</optgroup>`;
+  O.innerHTML=`<option value="?목적어">?목적어 (알고 싶은 것)</option>`+clsGroup+entGroups;
+  S.value="ex:피란민"; P.value="ex:settledAt"; O.value="?목적어";   // 기본 예시
+  const build=()=>{ const a=[S.value,P.value,O.value], vars=[]; a.forEach(x=>{ if(x[0]==="?"&&!vars.includes(x)) vars.push(x); });
+    return `SELECT ${vars.length?vars.join(" "):"*"} WHERE {\n  ${a[0]} ${a[1]} ${a[2]} .\n}`; };
+  const refresh=()=>{ document.getElementById("pgb-preview").textContent=build(); };
+  [S,P,O].forEach(el=>el.addEventListener("change",refresh)); refresh();
+  document.getElementById("pgb-run").addEventListener("click",()=>{ pgInput.value=build(); pgRun(); pgInput.scrollIntoView({behavior:"smooth",block:"center"}); });
+})();
 
 pgInput.value="# 온톨로지에게 직접 물어보세요. 예: 모든 인물 찾기\nSELECT ?person WHERE {\n  ?person a ex:Person .\n}";
 </script>
