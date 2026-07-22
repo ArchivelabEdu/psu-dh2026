@@ -194,6 +194,26 @@
   .pg{border-top:1px solid var(--line);margin-top:6px}
   .pg-desc{font-size:13.5px;color:var(--muted);margin:2px 0 11px}
   .pg-desc code{background:#f2efe9;padding:1px 5px;border-radius:4px;font-size:12.5px}
+  .pg-help{margin:0 0 12px;border:1px solid var(--line);border-radius:10px;background:#fbfaf8}
+  .pg-help>summary{cursor:pointer;font-weight:700;color:var(--point);font-size:13.5px;padding:11px 14px;list-style:none}
+  .pg-help>summary::-webkit-details-marker{display:none}
+  .pg-help>summary::before{content:"▸  ";color:var(--point)}
+  .pg-help[open]>summary::before{content:"▾  "}
+  .pg-help-body{padding:2px 14px 14px}
+  .help-lead{font-size:13.5px;color:#463f38;line-height:1.7;margin:2px 0 12px}
+  .help-lead code,.he-desc code{background:#f2efe9;padding:1px 5px;border-radius:4px;font-size:12px;font-family:Menlo,Consolas,monospace}
+  .help-lead b{color:var(--point)}
+  .help-syntax{border-collapse:collapse;width:100%;font-size:12.5px;margin:0 0 6px}
+  .help-syntax td{border:1px solid var(--line);padding:5px 9px;color:#463f38}
+  .help-syntax td:first-child{font-family:Menlo,Consolas,monospace;color:var(--accent);white-space:nowrap;background:#f7f6f4;font-weight:700}
+  .help-ex{border-top:1px solid var(--line);padding:11px 0}
+  .help-ex .he-desc{font-size:13px;color:#3a332d;margin-bottom:5px}
+  .help-ex .he-desc b{color:var(--point)}
+  .help-ex pre{margin:0 0 7px;background:#f6f5f3;border:1px solid var(--line);border-radius:7px;
+    padding:9px 11px;font-family:Menlo,Consolas,monospace;font-size:12px;line-height:1.5;overflow-x:auto;white-space:pre}
+  .help-ex button{border:1px solid var(--point);background:#fff;color:var(--point);font:inherit;font-size:12px;
+    font-weight:700;padding:4px 12px;border-radius:7px;cursor:pointer}
+  .help-ex button:hover{background:var(--point);color:#fff}
   .pg-ex{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
   .pg-ex button{border:1px solid var(--line);background:#fff;color:var(--accent2);font:inherit;font-size:12.5px;
     font-weight:600;padding:5px 11px;border-radius:20px;cursor:pointer;transition:border-color .15s,background .15s}
@@ -384,6 +404,10 @@
     <div class="viz pg">
       <div class="q-sec-label">직접 질의 — SPARQL 플레이그라운드</div>
       <p class="pg-desc">직접 SPARQL을 써서 이 그래프에 물어보세요. 실제 엔진이 실행하며, 접두어(<code>ex:</code> 등)는 자동으로 붙습니다.</p>
+      <details class="pg-help">
+        <summary>SPARQL이 처음이신가요? — 문법 도움말 · 예시</summary>
+        <div class="pg-help-body" id="pg-help-body"></div>
+      </details>
       <div class="pg-ex" id="pg-ex"></div>
       <textarea id="pg-input" spellcheck="false" aria-label="SPARQL 입력"></textarea>
       <div class="pg-bar">
@@ -1327,6 +1351,32 @@ document.getElementById("pg-cheat").innerHTML=
   `<div><b>관계(술어)</b>  ${PG_PREDS.map(p=>"ex:"+p).join(" · ")}</div>`+
   `<div><b>속성</b>  rdfs:label · ex:date · ex:placeType · ex:lat · ex:lng</div>`+
   `<div><b>개체 예</b>  ex:이중섭 · ex:부산 · ex:광복동 · ex:피란민 · ex:국제시장 (한글 IRI 그대로)</div>`;
+// 문법 도움말 패널
+const HELP_EX=[
+ {d:`<b>①</b> 어떤 종류를 전부 찾기 — <code>a</code>는 "~의 종류다"(rdf:type)`, q:`SELECT ?장소 WHERE {\n  ?장소 a ex:Place .\n}`},
+ {d:`<b>②</b> 한 개체에 달린 모든 것 — 서술어·목적어를 변수로`, q:`SELECT ?관계 ?대상 WHERE {\n  ex:이중섭 ?관계 ?대상 .\n}`},
+ {d:`<b>③</b> 특정 관계로 찾기`, q:`SELECT ?곳 WHERE {\n  ex:피란민 ex:settledAt ?곳 .\n}`},
+ {d:`<b>④</b> 방향 반대로 — 목적어를 고정하면 "그곳에 ~한 주어"`, q:`SELECT ?사람 WHERE {\n  ?사람 ex:workedAt ex:광복동 .\n}`},
+ {d:`<b>⑤</b> 조건 두 개 함께 — <code>;</code>은 "주어가 같다"는 축약`, q:`SELECT ?사람 WHERE {\n  ?사람 a ex:Person ;\n        ex:evacuatedTo ex:부산 .\n}`},
+ {d:`<b>⑥</b> 관계를 이어 가기(다단계) — 앞 결과를 다음 줄에서 다시 사용`, q:`SELECT ?작품 ?제작지 WHERE {\n  ex:이중섭 ex:created ?작품 .\n  ?작품 ex:createdAt ?제작지 .\n}`},
+ {d:`<b>⑦</b> 개수 세기 — <code>COUNT · GROUP BY · ORDER BY · LIMIT</code>`, q:`SELECT ?관계 (COUNT(*) AS ?개수) WHERE {\n  ?s ?관계 ?o .\n}\nGROUP BY ?관계 ORDER BY DESC(?개수) LIMIT 5`},
+ {d:`<b>⑧</b> 조건 걸기 — <code>FILTER</code>, 날짜는 <code>^^xsd:date</code>`, q:`SELECT ?사건 ?날짜 WHERE {\n  ?e a ex:Event ;\n     rdfs:label ?사건 ;\n     ex:date ?날짜 .\n  FILTER(?날짜 >= "1953-01-01"^^xsd:date)\n}\nORDER BY ?날짜`},
+ {d:`<b>⑨</b> 있으면 채우고 없으면 비우기 — <code>OPTIONAL</code>`, q:`SELECT ?사람 ?작품 WHERE {\n  ?사람 a ex:Person .\n  OPTIONAL { ?사람 ex:created ?작품 . }\n}`}
+];
+document.getElementById("pg-help-body").innerHTML =
+  `<p class="help-lead">SPARQL은 <b>빈칸 채우기</b>입니다. 아는 건 그대로 쓰고, 알고 싶은 건 <code>?변수</code>로 둡니다.<br>예: <code>ex:피란민 ex:settledAt ?곳 .</code> → “피란민이 정착한 <b>?곳</b>을 모두 찾아라.”</p>`+
+  `<table class="help-syntax"><tbody>`+
+   `<tr><td>?이름</td><td>알고 싶은 빈칸(변수) — 한글도 됩니다(예: ?곳)</td></tr>`+
+   `<tr><td>a</td><td>~의 종류다 (rdf:type)</td></tr>`+
+   `<tr><td>.</td><td>조건 하나 끝 — 여러 개면 모두 만족(AND)</td></tr>`+
+   `<tr><td>;</td><td>주어가 같음(반복 생략)</td></tr>`+
+   `<tr><td>FILTER(...)</td><td>조건 걸기</td></tr>`+
+   `<tr><td>COUNT · GROUP BY · ORDER BY · LIMIT</td><td>세기 · 묶기 · 정렬 · 개수 제한</td></tr>`+
+  `</tbody></table>`+
+  HELP_EX.map((x,i)=>`<div class="help-ex"><div class="he-desc">${x.d}</div><pre>${pgEsc(x.q)}</pre><button data-h="${i}">넣고 실행 ▶</button></div>`).join("");
+document.querySelectorAll("#pg-help-body button[data-h]").forEach(b=>b.addEventListener("click",()=>{
+  pgInput.value=HELP_EX[+b.dataset.h].q; pgRun(); pgInput.scrollIntoView({behavior:"smooth",block:"center"}); }));
+
 pgInput.value="# 온톨로지에게 직접 물어보세요. 예: 모든 인물 찾기\nSELECT ?person WHERE {\n  ?person a ex:Person .\n}";
 </script>
 </body>
